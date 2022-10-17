@@ -3,18 +3,16 @@ import json
 
 camera = Camera()
 
-class World:
+class Chunk:
     def __init__(self) -> None:
         with open("map.json") as f:
             content = json.load(f)
-            self.backgroundMap = content["backgroundMap"]
-            self.foregroundMap = content["foregroundBarriers"]
+            self.backgroundMap = content["chunk1"]["backgroundMap"]
+            self.foregroundMap = content["chunk1"]["foregroundBarriers"]
         self.tileSize = 60
         for i in range(len(self.backgroundMap)):
             for j in range(len(self.backgroundMap[i])):
                 self.backgroundMap[i][j] = BackgroundTile(j, i, self.backgroundMap[i][j])
-        for i in range(len(self.foregroundMap)):
-            for j in range(len(self.foregroundMap[i])):
                 if self.foregroundMap[i][j] != 0:
                     self.foregroundMap[i][j] = ForegroundTile(j, i, self.foregroundMap[i][j])
 

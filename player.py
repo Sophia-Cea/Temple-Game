@@ -1,10 +1,10 @@
 from world import *
 
-world = World()
+world = Chunk()
 
 class Entity:
     def __init__(self) -> None:
-        self.pos = [500, 350]
+        self.pos = [950, 800]
         self.rect = pygame.Rect(self.pos[0], self.pos[1], 50,50)
         self.surface = pygame.Surface(self.rect.size)
         self.surface.fill((255,0,255))

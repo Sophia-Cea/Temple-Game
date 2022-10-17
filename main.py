@@ -2,6 +2,18 @@ import pygame
 import sys
 from state import *
 
+'''
+    TODO
+    - make player controller
+    - ...
+    - .....
+    - ???
+    - profit
+'''
+
+
+
+
 
 pygame.init()
 fpsClock = pygame.time.Clock()

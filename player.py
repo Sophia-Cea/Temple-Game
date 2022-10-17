@@ -1,4 +1,6 @@
+from utils import delta
 from world import *
+
 
 world = Chunk()
 
@@ -42,7 +44,7 @@ class Player(Entity):
     def __init__(self) -> None:
         super().__init__()
         self.lives = 3
-        self.speed = 3
+        self.speed = 300
         self.surface = pygame.Surface(self.rect.size)
         self.surface.fill((255,0,0))
 
@@ -55,39 +57,39 @@ class Player(Entity):
         super().update()
 
     def handleInput(self, events):
+        dt = delta()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x - self.speed*delta, self.rect.y, self.rect.width, self.rect.height))
+            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x - self.speed*dt, self.rect.y, self.rect.width, self.rect.height))
             if rect == None:
-                self.pos[0] -= self.speed * delta
+                self.pos[0] -= self.speed * dt
             else: 
-                self.pos[0] -= (self.pos[0] - rect.right) * delta
+                self.pos[0] -= (self.pos[0] - rect.right) * dt
 
         if keys[pygame.K_RIGHT]:
-            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x + self.speed*delta, self.rect.y, self.rect.width, self.rect.height))
+            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x + self.speed*dt, self.rect.y, self.rect.width, self.rect.height))
             if rect == None:
-                self.pos[0] += self.speed * delta
+                self.pos[0] += self.speed * dt
             else:
-                self.pos[0] += (rect.left - self.rect.right) * delta
+                self.pos[0] += (rect.left - self.rect.right) * dt
 
         if keys[pygame.K_UP]:
-            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x, self.rect.y - self.speed*delta, self.rect.width, self.rect.height))
+            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x, self.rect.y - self.speed*dt, self.rect.width, self.rect.height))
             if rect == None:
-                self.pos[1] -= self.speed * delta
+                self.pos[1] -= self.speed * dt
             else:
-                self.pos[1] -= (self.rect.top - rect.bottom) * delta
+                self.pos[1] -= (self.rect.top - rect.bottom) * dt
 
         if keys[pygame.K_DOWN]:
-            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x, self.rect.y + self.speed * delta, self.rect.width, self.rect.height))
+            rect = self.handleBarrierCollision(pygame.Rect(self.rect.x, self.rect.y + self.speed * dt, self.rect.width, self.rect.height))
             if rect == None:
-                self.pos[1] += self.speed * delta
+                self.pos[1] += self.speed * dt
             else:
-                self.pos[1] += (rect.top - self.rect.bottom) * delta
+                self.pos[1] += (rect.top - self.rect.bottom) * dt
         
         if keys[pygame.K_RETURN]:
             print("Self.pos = ", self.pos)
             print(f"Camera = [{camera.xOffset}, {camera.yOffest}]")
-        print(delta)
 
 
 class Enemy(Entity):

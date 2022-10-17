@@ -14,16 +14,29 @@ class Entity:
         screen.blit(self.surface, (r.x, r.y))
         
     def update(self):
-        pass
+        self.rect.x = self.pos[0]
+        self.rect.y = self.pos[1]
+        camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
 
-    def handleBarrierCollision(self):
-        rects = []
+    def handleBarrierCollision(self, entityRect: pygame.Rect=None):
+        rects: list[pygame.Rect] = []
+        if entityRect == None:
+            entityRect = self.rect
         for i in range(len(world.foregroundMap)):
             for j in range(len(world.foregroundMap[i])):
-                rect = pygame.Rect(-camera.xOffset + j*world.tileSize, -camera.yOffest + i*world.tileSize, world.tileSize, world.tileSize)
-                if world.foregroundMap[i][j] == 1 and self.rect.colliderect(rect):
-                    rects.append(rect)
+                if world.foregroundMap[i][j] != 0:
+                    rect = camera.project(world.foregroundMap[i][j].rect)
+                    if entityRect.colliderect(rect):
+                        rects.append(rect)
         return rects
+
+    def findClosestRectLeft(self, rects: list[pygame.Rect]):
+        closestRect: pygame.Rect = rects[0]
+        for rect in rects:
+            if (self.pos[0] - rect.right) < (self.pos[0] - closestRect.right):
+                closestRect = rect
+        return closestRect
+
                 
 
 class Player(Entity):
@@ -38,30 +51,26 @@ class Player(Entity):
         super().render(screen)
         pygame.draw.rect(screen, (255,0,0), self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), 2)
         # screen.blit(self.surface, (-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), special_flags=pygame.BLEND_RGB_ADD)
+        rects = self.handleBarrierCollision()
+        for rect in rects:
+            pygame.draw.rect(screen, (255,100,100), rect, 2)
 
-    
     def update(self):
         super().update()
-        # rect = self.handleBarrierCollision()
-        # if rect != None:
-        #     if self.rect.left < rect.right:
-        #         self.pos[0] = rect.right - self.rect.left + 1
-
-        #     elif self.rect.right > rect.left:
-        #         self.pos[0] = self.rect.right - rect.left - 1
-
-        self.rect.x = self.pos[0]
-        self.rect.y = self.pos[1]
-        camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
-
 
     def handleInput(self, events):
         keys = pygame.key.get_pressed()
-        rects = self.handleBarrierCollision()
 
         if keys[pygame.K_LEFT]:
-            # for rect in rects:
+            rects = self.handleBarrierCollision(pygame.Rect(self.rect.x - self.speed, self.rect.y, self.rect.width, self.rect.height))
+            print(rects)
+            if rects == []:
                 self.pos[0] -= self.speed * delta
+            else: 
+                # if len(rects) == 1:
+                self.pos[0] -= self.pos[0] - rects[0].right
+                # else: 
+                #     print("yee")
 
         if keys[pygame.K_RIGHT]:
             self.pos[0] += self.speed * delta

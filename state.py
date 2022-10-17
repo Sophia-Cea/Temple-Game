@@ -55,7 +55,6 @@ class PlayState(State):
     def update(self):
         super().update()
         self.player.update()
-        # self.player.handleBarrierCollision()
 
     def handleInput(self, events):
         super().handleInput(events)

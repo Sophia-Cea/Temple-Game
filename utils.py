@@ -6,7 +6,7 @@ import math
 pygame.init()
 WIDTH = 1000
 HEIGHT = 700
-delta = 1
+delta: float = 1.0
 
 
 class Camera:
@@ -19,7 +19,7 @@ class Camera:
         self.yOffest += (y - self.yOffest) * percent
 
     def project(self, rect: pygame.Rect) -> pygame.Rect:
-        return pygame.Rect(rect.centerx - self.xOffset + WIDTH/2, rect.centery - self.yOffest + HEIGHT/2, rect.w, rect.h)
+        return pygame.Rect(rect.x - self.xOffset + WIDTH/2, rect.y - self.yOffest + HEIGHT/2, rect.w, rect.h)
                 
 
 def gradient(col1, col2, surface, rect=None):

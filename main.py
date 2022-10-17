@@ -2,6 +2,18 @@ import pygame
 import sys
 from state import *
 
+'''
+    TODO
+    - make player controller
+    - ...
+    - .....
+    - ???
+    - profit
+'''
+
+
+
+
 
 pygame.init()
 fpsClock = pygame.time.Clock()
@@ -13,6 +25,7 @@ stateManager.push(PlayState())
 
 running = True
 while running:
+    delta = fpsClock.tick(60)/1000
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
@@ -24,4 +37,3 @@ while running:
     stateManager.run(display, events)
     screen.blit(pygame.transform.scale(display, (WIDTH, HEIGHT)), (0,0))
     pygame.display.flip()
-    delta = fpsClock.tick(60)/1000

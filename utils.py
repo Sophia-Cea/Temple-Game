@@ -3,10 +3,24 @@ import sys
 import os
 import math
 
+
 pygame.init()
 WIDTH = 1000
 HEIGHT = 700
-delta: float = 1.0
+class GameClock:
+    def __init__(self) -> None:
+        self.fps_cap = 60
+        self.clock = pygame.time.Clock()
+        self._delta: float = 1.0
+
+    def tick(self):
+        self._delta = self.clock.tick(self.fps_cap) / 1000
+
+clock = GameClock()
+
+# Call this function to get the current delta time value
+def delta():
+    return clock._delta
 
 
 class Camera:

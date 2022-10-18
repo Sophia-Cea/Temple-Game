@@ -1,2 +1,30 @@
 .venv
-__pycache__
+settings.json
+__pycache__/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyc
+
+# C extensions
+*.so
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+/__pycache__
+/__pycache__/state.cpython-310.pyc
+/__pycache__/player.cpython-310.pyc
+/__pycache__/utils.cpython-310.pyc

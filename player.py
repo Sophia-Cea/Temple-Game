@@ -36,7 +36,6 @@ class Entity:
                 closestRect = rect
         return closestRect
 
-                
 
 class Player(Entity):
     def __init__(self) -> None:
@@ -48,8 +47,8 @@ class Player(Entity):
 
     def render(self, screen):
         super().render(screen)
-        pygame.draw.rect(screen, (255,0,0), self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), 2)
-        # screen.blit(self.surface, (-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), special_flags=pygame.BLEND_RGB_ADD)
+        # pygame.draw.rect(screen, (255,0,0), self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), 2)
+        screen.blit(self.surface, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)) #, special_flags=pygame.BLEND_RGB_ADD)
 
     def update(self):
         super().update()

@@ -26,7 +26,7 @@ class Chunk:
 
 
 class Tile:
-    tileSize = 60
+    tileSize = 70
     def __init__(self, x, y, type) -> None:
         self.rect: pygame.Rect = pygame.Rect(x*Tile.tileSize, y*Tile.tileSize, Tile.tileSize, Tile.tileSize)
         self.surf: pygame.Surface = pygame.Surface(self.rect.size)

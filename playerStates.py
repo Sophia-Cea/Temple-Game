@@ -1,6 +1,4 @@
 from world import *
-# from player import *
-
 
 class State:
     def __init__(self, player) -> None:

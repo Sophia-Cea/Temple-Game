@@ -7,6 +7,14 @@ import utils
     TODO
     - make player controller
     - make level editor
+    - enemies
+    - attacks
+    - weapon switching
+    - inventory
+        - keys
+        - pieces of a broken jewel
+    - main menu
+    - pause menu
     - ...
     - .....
     - ???

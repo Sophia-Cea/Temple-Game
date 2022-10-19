@@ -1,5 +1,5 @@
-from utils import delta
-from world import *
+# from world import *
+from playerStates import *
 
 
 world = Chunk()
@@ -46,16 +46,32 @@ class Player(Entity):
         self.speed = 300
         self.surface = pygame.Surface(self.rect.size)
         self.surface.fill((255,0,0))
+        self.states = {
+            "idle" : IdleState(self),
+            "moving" : MoveState(self)
+        }
+        self.currentState = self.states["idle"]
 
     def render(self, screen):
         super().render(screen)
         # pygame.draw.rect(screen, (255,0,0), self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2), 2)
-        screen.blit(self.surface, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)) #, special_flags=pygame.BLEND_RGB_ADD)
+        # screen.blit(self.surface, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)) #, special_flags=pygame.BLEND_RGB_ADD)
+        self.currentState.render(screen, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2))
 
     def update(self):
         super().update()
+        self.currentState.update()
+
 
     def handleInput(self, events):
+        self.currentState.handleInput(events)
+        # for event in events:
+        #     if event.type == pygame.KEYDOWN:
+        #         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+        #             self.currentState = self.states["moving"]
+            
+
+        '''
         dt = delta()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -89,9 +105,9 @@ class Player(Entity):
         if keys[pygame.K_RETURN]:
             print("Self.pos = ", self.pos)
             print(f"Camera = [{camera.xOffset}, {camera.yOffest}]")
+        '''
 
 
 class Enemy(Entity):
     def __init__(self) -> None:
         super().__init__()
-    

@@ -6,6 +6,7 @@ import utils
 '''
     TODO
     - make player controller
+    - make level editor
     - ...
     - .....
     - ???
@@ -25,7 +26,7 @@ stateManager.push(PlayState())
 
 running = True
 while running:
-    utils.clock.tick()
+    clock.tick()
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:

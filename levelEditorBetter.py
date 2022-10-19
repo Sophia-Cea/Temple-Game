@@ -78,9 +78,21 @@ class LevelEditor:
                     self.chunks[self.currentChunk].gridSize[1] += 1
                     self.chunks[self.currentChunk].initializeGrid()
                 elif event.key == pygame.K_s: # this is all fucked up and i dont know why ;n;
-                    self.chunks[self.currentChunk].maps[0] = self.chunks[self.currentChunk].maps[0][:-1]
-                    self.chunks[self.currentChunk].maps[1] = self.chunks[self.currentChunk].maps[1][:-1]
+                    self.chunks[self.currentChunk].maps[0].pop(-1) #= self.chunks[self.currentChunk].maps[0][:-1]
+                    self.chunks[self.currentChunk].maps[1].pop(-1) #= self.chunks[self.currentChunk].maps[1][:-1]
                     self.chunks[self.currentChunk].gridSize[1] -= 1
+                    self.chunks[self.currentChunk].initializeGrid()
+                elif event.key == pygame.K_d:
+                    for i in range(len(self.chunks[self.currentChunk].maps[1])):
+                        self.chunks[self.currentChunk].maps[1][i].append(0)
+                        self.chunks[self.currentChunk].maps[0][i].append(0)
+                    self.chunks[self.currentChunk].gridSize[0] += 1
+                    self.chunks[self.currentChunk].initializeGrid()
+                elif event.key == pygame.K_a:
+                    for i in range(len(self.chunks[self.currentChunk].maps[1])):
+                        self.chunks[self.currentChunk].maps[1][i].pop(-1)
+                        self.chunks[self.currentChunk].maps[0][i].pop(-1)
+                    self.chunks[self.currentChunk].gridSize[0] -= 1
                     self.chunks[self.currentChunk].initializeGrid()
                     
             if event.type == pygame.MOUSEBUTTONUP:

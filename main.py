@@ -26,7 +26,7 @@ stateManager.push(PlayState())
 
 running = True
 while running:
-    clock.tick()
+    utils.clock.tick()
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:

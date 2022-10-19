@@ -39,6 +39,7 @@ class LevelEditor:
                     self.selectedColor = 2
                 elif event.key == pygame.K_3:
                     self.selectedColor = 3
+
                 elif event.key == pygame.K_LEFT:
                     if self.currentChunk == 0:
                         self.currentChunk = len(self.chunks)-1
@@ -51,19 +52,36 @@ class LevelEditor:
                     else:
                         self.currentChunk += 1
                     self.texts[1].reset((255,255,255), "Chunk: " + str(1+self.currentChunk))
+
                 elif event.key == pygame.K_UP:
                     if self.chunks[self.currentChunk].currentMap == len(self.chunks[self.currentChunk].maps) - 1:
                         self.chunks[self.currentChunk].currentMap = 0
                     else:
                         self.chunks[self.currentChunk].currentMap += 1
                     self.texts[2].reset((255,255,255), ["foreground", "background"][self.chunks[self.currentChunk].currentMap])
-
                 elif event.key == pygame.K_DOWN:
                     if self.chunks[self.currentChunk].currentMap == 0:
                         self.chunks[self.currentChunk].currentMap = len(self.chunks[self.currentChunk].maps) - 1
                     else:
                         self.chunks[self.currentChunk].currentMap -= 1
                     self.texts[2].reset((255,255,255), ["foreground", "background"][self.chunks[self.currentChunk].currentMap])
+                
+                elif event.key == pygame.K_RETURN:
+                    saveFile()
+
+                elif event.key == pygame.K_w:
+                    newRow = []
+                    for _ in range(len(self.chunks[self.currentChunk].maps[1][0])):
+                        newRow.append(0)
+                    self.chunks[self.currentChunk].maps[0].append(newRow)
+                    self.chunks[self.currentChunk].maps[1].append(newRow)
+                    self.chunks[self.currentChunk].gridSize[1] += 1
+                    self.chunks[self.currentChunk].initializeGrid()
+                elif event.key == pygame.K_s: # this is all fucked up and i dont know why ;n;
+                    self.chunks[self.currentChunk].maps[0] = self.chunks[self.currentChunk].maps[0][:-1]
+                    self.chunks[self.currentChunk].maps[1] = self.chunks[self.currentChunk].maps[1][:-1]
+                    self.chunks[self.currentChunk].gridSize[1] -= 1
+                    self.chunks[self.currentChunk].initializeGrid()
                     
             if event.type == pygame.MOUSEBUTTONUP:
                 x,y = pygame.mouse.get_pos()
@@ -88,9 +106,10 @@ class Chunk:
         self.foreground = chunkDict["foregroundBarriers"]
         self.background = chunkDict["backgroundMap"]
         self.gridSize = [len(self.foreground[0]), len(self.foreground)]
-        self.tileSize = self.findTileSize()
-        self.marginX = (WIDTH - (self.tileSize*self.gridSize[0]))/2
-        self.marginY = (HEIGHT - (self.tileSize*self.gridSize[1]))/2
+        self.tileSize = None
+        self.marginX = None
+        self.marginY = None
+        self.initializeGrid()
         self.maps = [self.foreground, self.background]
         self.currentMap = 0
 
@@ -120,12 +139,25 @@ class Chunk:
         maxWidth = WIDTH*Chunk.maxGridWidth/100
         maxHeight = HEIGHT*Chunk.maxGridHeight/100
         tileSizes = [maxWidth/len(self.foreground[0]), maxHeight/len(self.foreground)]
+        print("finding tile size...")
         return min(tileSizes)
 
+    def calculateMargin(self):
+        self.marginX = (WIDTH - (self.tileSize*self.gridSize[0]))/2
+        self.marginY = (HEIGHT - (self.tileSize*self.gridSize[1]))/2
 
+    def initializeGrid(self):
+        self.tileSize = self.findTileSize()
+        self.calculateMargin()
 
 levelEditor = LevelEditor()
 
+def saveFile():
+    for i in enumerate(levelEditor.world):
+        levelEditor.world[i[1]]["backgroundMap"] = levelEditor.chunks[i[0]].background
+        levelEditor.world[i[1]]["foregroundBarriers"] = levelEditor.chunks[i[0]].foreground
+    with open("testMap.json", "w") as f:
+        json.dump(levelEditor.world, f)
 
 def render(screen):
     levelEditor.render(screen)
@@ -148,6 +180,7 @@ while running:
     for event in events:
         if event.type == pygame.QUIT:
             running = False
+            saveFile()
             pygame.quit()
             sys.exit()
 

@@ -38,26 +38,36 @@ class State:
     def handleInput(self, events):
         pass
 
-
 class PlayState(State):
     def __init__(self) -> None:
         super().__init__()
         self.player = Player()
-
+        self.enemies = [FixedEnemy((20,20)), FixedEnemy((1,1)), FixedEnemy((10,20)), FixedEnemy((25,20))]
 
     def render(self, screen):
         super().render(screen)
         screen.fill((0,0,10))
         world.render(screen)
         self.player.render(screen)
+        for enemy in self.enemies:
+            enemy.render(screen)
 
-    
+
     def update(self):
         super().update()
         self.player.update()
+        for enemy in self.enemies:
+            enemy.update()
+            if enemy.readyToLaunch:
+                if measureDistance(enemy.pos, self.player.pos) <= 200:
+                    enemy.launchBullet(self.player.pos)
+        Bullet.checkAllBulletsCollision()
+
 
     def handleInput(self, events):
         super().handleInput(events)
         self.player.handleInput(events)
+        for enemy in self.enemies:
+            enemy.handleInput(events)
 
 

@@ -6,8 +6,9 @@ import utils
 '''
     TODO
     - make player controller
-    - make level editor
+    - make level editor √
     - enemies
+        - move enemies from playstate to being generated in the chunk
     - attacks
     - weapon switching
     - inventory

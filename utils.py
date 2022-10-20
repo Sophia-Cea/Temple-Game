@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import math
+from random import randint, choice
 
 
 pygame.init()
@@ -34,6 +35,9 @@ class Camera:
 
     def project(self, rect: pygame.Rect) -> pygame.Rect:
         return pygame.Rect(rect.x - self.xOffset + WIDTH/2, rect.y - self.yOffest + HEIGHT/2, rect.w, rect.h)
+    
+    def projectPoint(self, pos: tuple) -> tuple:
+        return (pos[0] - self.xOffset + WIDTH/2, pos[1] - self.yOffest + HEIGHT/2)
                 
 
 def gradient(col1, col2, surface, rect=None):
@@ -69,6 +73,9 @@ def clampColor(val):
 def convertRect(rectTuple):
     newRect = rectTuple
     return pygame.Rect(WIDTH/100*newRect[0], HEIGHT/100*newRect[1], WIDTH/100*newRect[2], HEIGHT/100*newRect[3])
+
+def measureDistance(pt1, pt2):
+    return math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
 
 class Colors:
     col1 = [248, 248, 255]
@@ -156,7 +163,6 @@ class Text:
         Fonts.resizeFonts(surface)
         for text in Text.texts:
             text.resize()
-
 
 class Button:
     buttons = []

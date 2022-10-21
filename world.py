@@ -3,6 +3,20 @@ import json
 
 camera = Camera()
 
+class World:
+    def __init__(self) -> None:
+        self.chunks = []
+        self.currentChunk = 0
+    
+    def render(self, screen):
+        pass
+
+    def update(self):
+        pass
+
+    def handleInput(self, events):
+        pass
+
 class Chunk:
     def __init__(self) -> None:
         with open("map.json") as f:

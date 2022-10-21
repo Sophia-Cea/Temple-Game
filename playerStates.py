@@ -22,7 +22,6 @@ class State:
                 else:
                     self.currentFrame = 0
 
-
 class IdleState(State):
     def __init__(self, player) -> None:
         super().__init__(player)
@@ -38,7 +37,6 @@ class IdleState(State):
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     self.player.currentState = self.player.states["moving"]
 
-
 class MoveState(State):
     def __init__(self, player) -> None:
         super().__init__(player)
@@ -48,7 +46,6 @@ class MoveState(State):
         self.animation[0].fill((255,255,255))
         self.animation[1].fill((0,0,0))
         
-    
     def handleInput(self, events):
         super().handleInput(events)
         dt = delta()

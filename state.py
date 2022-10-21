@@ -1,4 +1,4 @@
-from player import *
+from entity import *
 
 
 
@@ -42,7 +42,7 @@ class PlayState(State):
     def __init__(self) -> None:
         super().__init__()
         self.player = Player()
-        self.enemies = [FixedEnemy((20,20)), FixedEnemy((1,1)), FixedEnemy((10,20)), FixedEnemy((25,20))]
+        self.enemies = [FixedEnemy((10,10)), FixedEnemy((1,1)), FixedEnemy((10,20)), FixedEnemy((1,10))]
 
     def render(self, screen):
         super().render(screen)

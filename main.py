@@ -6,9 +6,11 @@ import utils
 '''
     TODO
     - make player controller
+        - How do you control what direction the bullet shoots?
     - make level editor √
     - enemies
         - move enemies from playstate to being generated in the chunk
+        - ***** refactor the playstate to have 4 chunks that are run based on which chunk ur in
     - attacks
     - weapon switching
     - inventory

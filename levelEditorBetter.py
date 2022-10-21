@@ -2,28 +2,31 @@ import pygame
 import sys
 from utils import *
 import json
-import tkinter as tk
-from tkinter import filedialog
+# import tkinter as tk
+# from tkinter import filedialog
 
-tk.Tk().withdraw()
+# tk.Tk().withdraw()
 pygame.init()
 screen = pygame.display.set_mode([WIDTH, HEIGHT], pygame.RESIZABLE)
 
 class LevelEditor:
-    def __init__(self, file_path) -> None:
-        with open(file_path) as f:
+    def __init__(self) -> None:
+        with open("map.json") as f:
             self.world = json.load(f)
-        self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
+        # self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
+        self.chunks = []
+        for key in self.world:
+            self.chunks.append(Chunk(self.world[key]))
         self.currentChunk = 0
         self.texts = [Text("Level Editor", "subtitle", (255,255,255), (50,1), True), Text("Chunk: " + str(self.currentChunk+1), "paragraph", (255,255,255), (50, 8), True), Text("Foreground", "paragraph", (255,255,255), (50, 87), True)]
         self.selectedColor = 1
 
-    def setFile(self, file_path):
-        with open(file_path) as f:
-            self.world = json.load(f)
-        self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
-        self.currentChunk = 0
-        self.loaded = True
+    # def setFile(self, file_path):
+    #     with open(file_path) as f:
+    #         self.world = json.load(f)
+    #     self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
+    #     self.currentChunk = 0
+    #     self.loaded = True
 
     def render(self, screen):
         screen.fill((0,0,0))
@@ -196,15 +199,15 @@ def run(screen, events):
     handleInput(events)
 
 running = True
-file_path = filedialog.askopenfilename(title="Select Level File",
-                            filetypes=[("JSON Files", "*.json")],
-                            defaultextension="json")
-if file_path is None:
-    pygame.quit()
-    sys.exit()
+# file_path = filedialog.askopenfilename(title="Select Level File",
+#                             filetypes=[("JSON Files", "*.json")],
+#                             defaultextension="json")
+# if file_path is None:
+#     pygame.quit()
+#     sys.exit()
 # past this point, the file definitely exists (program terminates otherwise) 
     
-levelEditor = LevelEditor(file_path) 
+levelEditor = LevelEditor() 
 
 while running:
     clock.tick()

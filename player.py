@@ -1,4 +1,4 @@
-from numpy import deg2rad
+from utils import deg2rad
 from playerStates import *
 
 

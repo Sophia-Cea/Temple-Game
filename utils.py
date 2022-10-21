@@ -77,6 +77,12 @@ def convertRect(rectTuple):
 def measureDistance(pt1, pt2):
     return math.sqrt((pt2[0] - pt1[0])**2 + (pt2[1] - pt1[1])**2)
 
+def deg2rad(degrees):
+    return degrees * math.pi / 180
+
+def rad2deg(radians):
+    return radians * 180 / math.pi
+
 class Colors:
     col1 = [248, 248, 255]
     col2 = [237, 87, 82]

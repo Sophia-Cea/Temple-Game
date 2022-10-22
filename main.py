@@ -3,16 +3,29 @@ import sys
 from state import *
 import utils
 
+# TODO next:
+# refactor the enemy handling system so that they are in the json map, 
+# and they are generated in the world and handled in the world (render, update)
+
+# ask andrew:
+# how should the player be able to control where they shoot?
+# should the player be free to move all over the screen (including diagonals) or only up/down left/right?
+# how should the camera move? just follow the player anywhere they go or be more 
+# steady and stop at the edges and stuff? (ask sophia for detailed description of this)
+
 '''
     TODO
     - make player controller
         - How do you control what direction the bullet shoots?
     - make level editor √
+    - rework camera
     - enemies
         - move enemies from playstate to being generated in the chunk
         - ***** refactor the playstate to have 4 chunks that are run based on which chunk ur in
     - attacks
     - weapon switching
+    - player health and damage
+    - enemy health and damage
     - inventory
         - keys
         - pieces of a broken jewel
@@ -23,7 +36,6 @@ import utils
     - ???
     - profit
 '''
-
 
 
 

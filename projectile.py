@@ -37,17 +37,17 @@ class Bullet(Projectile):
         "exploding": 2
     }
     bullets = []
-    def __init__(self, pos) -> None:
+    def __init__(self, startPos, targetPos) -> None:
         super().__init__()
-        self.setVars(Bullet.bulletSize/2, None, randint(170,250), (255,0,0), pos)
-        self.setState("idle")
+        self.setVars(Bullet.bulletSize/2, None, randint(170,250), (255,0,0), startPos)
+        self.angle = math.atan2((self.startPos[1] - targetPos[1]), (self.startPos[0] - targetPos[0])) + math.pi
+        self.setState("moving")
         self.particles = []
         self.initParticles()
         Bullet.bullets.append(self)
     
-    def setTarget(self, pos):
-        self.angle = math.atan2((self.startPos[0] - pos[0]), (self.startPos[1] - pos[1]))
-        self.setState("moving")
+    # def setTarget(self, pos):
+    #     self.angle = math.atan2((self.startPos[1] - pos[1]), (self.startPos[0] - pos[0])) + math.pi
     
     def initParticles(self):
         for _ in range(20):
@@ -96,7 +96,6 @@ class Bullet(Projectile):
         for particle in self.particles:
             if particle.isMoving:
                 return False
-        print("explosion Done")
         return True
 
 class ExplosionParticle(Projectile):

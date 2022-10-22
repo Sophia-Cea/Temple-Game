@@ -58,15 +58,15 @@ class Player(Entity):
 
 class FixedEnemy(Entity):
     size = Tile.tileSize
-    def __init__(self, pos) -> None:
+    def __init__(self, pos, bulletFrq=3000) -> None:
         super().__init__()
         # pos is given in the form of a position in the grid
         self.pos = [pos[0]*Tile.tileSize, pos[1]*Tile.tileSize]
         self.rect = pygame.Rect(self.pos[0], self.pos[1], FixedEnemy.size, FixedEnemy.size)
         self.bullets = []
-        self.bulletFrq = 3000
-        for i in range(5):
-            self.bullets.append(Bullet(self.rect.center))
+        self.bulletFrq = bulletFrq
+        # for i in range(5):
+        #     self.bullets.append(Bullet(self.rect.center))
         pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
         self.readyToLaunch = False
 
@@ -74,6 +74,10 @@ class FixedEnemy(Entity):
         super().update()
         for bullet in self.bullets:
             bullet.update()
+            if bullet.checkState("exploding"):
+                if bullet.checkExplosionDone():
+                    self.bullets.remove(bullet)
+                    Bullet.bullets.remove(bullet)
 
     def render(self, screen):
         for bullet in self.bullets:
@@ -86,12 +90,10 @@ class FixedEnemy(Entity):
                 self.readyToLaunch = True
     
     def launchBullet(self, pos):
-        for bullet in self.bullets:
-            if bullet.checkState("idle"):
-                bullet.setTarget(pos)
-                self.readyToLaunch = False
-                pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
-                break
+        self.bullets.append(Bullet(self.rect.center, pos))
+        # self.bullets[-1].setTarget(pos)
+        self.readyToLaunch = False
+        pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
 
 
 class MobileEnemy(Entity):

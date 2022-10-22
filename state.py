@@ -42,7 +42,7 @@ class PlayState(State):
     def __init__(self) -> None:
         super().__init__()
         self.player = Player()
-        self.enemies = [FixedEnemy((10,10)), FixedEnemy((1,1)), FixedEnemy((10,20)), FixedEnemy((1,10))]
+        self.enemies = [FixedEnemy((10,10), 1000), FixedEnemy((1,1), 5000), FixedEnemy((10,20), 500), FixedEnemy((1,10), 1000)]
 
     def render(self, screen):
         super().render(screen)
@@ -60,7 +60,7 @@ class PlayState(State):
             enemy.update()
             if enemy.readyToLaunch:
                 if measureDistance(enemy.pos, self.player.pos) <= 200:
-                    enemy.launchBullet(self.player.pos)
+                    enemy.launchBullet(self.player.rect.center)
         Bullet.checkAllBulletsCollision()
 
 

@@ -3,10 +3,7 @@ import sys
 from state import *
 
 # TODO next:
-# refactor the enemy handling system so that they are in the json map, 
-# and they are generated in the world and handled in the world (render, update)
 
-# TODO find where handleBarrierCollision is called and update parameters
 
 # ask andrew:
 # how should the player be able to control where they shoot?
@@ -14,6 +11,7 @@ from state import *
 # how should the camera move? just follow the player anywhere they go or be more 
 # steady and stop at the edges and stuff? (ask sophia for detailed description of this)
 # can i make Player, world, and camera static?
+# how does player heal?
 
 '''
     TODO
@@ -22,18 +20,20 @@ from state import *
     - make level editor √
     - rework camera
     - enemies
-        - move enemies from playstate to being generated in the chunk
-        - ***** refactor the playstate to have 4 chunks that are run based on which chunk ur in
+        - move enemies from playstate to being generated in the chunk √
+        - ***** refactor the playstate to have 4 chunks that are run based on which chunk ur in √
     - attacks
     - weapon switching
     - player health and damage
+        - plus ability to heal
+            - how do you heal??
     - enemy health and damage
     - inventory
         - keys
             - maybe keys actually just exist in the top corner
         - pieces of a broken jewel
-    - main menu
-    - pause menu
+    - main menu √
+    - pause menu √
     - ...
     - .....
     - ???
@@ -44,7 +44,6 @@ from state import *
 pygame.init()
 screen = pygame.display.set_mode([WIDTH, HEIGHT], pygame.RESIZABLE)
 display = pygame.Surface((WIDTH, HEIGHT))
-stateManager = StateManager()
 
 stateManager.push(PlayState())
 

@@ -23,7 +23,7 @@ class World:
 
     def update(self):
         self.getCurrentChunk().update()
-        Bullet.checkAllBulletsCollision(self.getCurrentChunk().foregroundMap)
+        Bullet.checkAllBulletsCollision(self.getCurrentChunk().foregroundMap, player)
 
     def handleInput(self, events):
         self.getCurrentChunk().handleInput(events)

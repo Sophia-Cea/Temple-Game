@@ -42,15 +42,21 @@ class Player(Entity):
             "moving" : MoveState(self)
         }
         self.currentState = self.states["idle"]
+        self.health = 5 #lives
 
     def render(self, screen):
         super().render(screen)
         self.currentState.render(screen, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2))
+        for i in range(self.health):
+            pygame.draw.circle(screen, (255,0,0), (35+i*30, 30), 10)
 
     def update(self):
         super().update()
         camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
         self.currentState.update()
+    
+    def takeDamage(self, amt):
+        self.health -= amt
         
 
     def handleInput(self, events, barrierMap): # BUG need to put in new parameter

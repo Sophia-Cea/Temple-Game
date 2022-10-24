@@ -1,6 +1,8 @@
-from entity import *
+# from entity import *
+# from playerStates import * 
+from world import *
 
-
+world = World()
 
 class StateManager:
     def __init__(self) -> None:
@@ -41,33 +43,26 @@ class State:
 class PlayState(State):
     def __init__(self) -> None:
         super().__init__()
-        self.player = Player()
-        self.enemies = [FixedEnemy((10,10), 1000), FixedEnemy((1,1), 5000), FixedEnemy((10,20), 500), FixedEnemy((1,10), 1000)]
+        
 
     def render(self, screen):
         super().render(screen)
         screen.fill((0,0,10))
         world.render(screen)
-        self.player.render(screen)
-        for enemy in self.enemies:
-            enemy.render(screen)
+        player.render(screen)
 
 
     def update(self):
         super().update()
-        self.player.update()
-        for enemy in self.enemies:
-            enemy.update()
-            if enemy.readyToLaunch:
-                if measureDistance(enemy.pos, self.player.pos) <= 200:
-                    enemy.launchBullet(self.player.rect.center)
-        Bullet.checkAllBulletsCollision()
+        world.update()
+        player.update()
 
 
     def handleInput(self, events):
         super().handleInput(events)
-        self.player.handleInput(events)
-        for enemy in self.enemies:
-            enemy.handleInput(events)
+        world.handleInput(events)
+        player.handleInput(events, world.getCurrentChunk().foregroundMap)
 
-
+class MenuState(State):
+    def __init__(self) -> None:
+        super().__init__()

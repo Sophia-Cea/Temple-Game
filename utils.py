@@ -38,7 +38,8 @@ class Camera:
     
     def projectPoint(self, pos: tuple) -> tuple:
         return (pos[0] - self.xOffset + WIDTH/2, pos[1] - self.yOffest + HEIGHT/2)
-                
+
+camera = Camera()       
 
 def gradient(col1, col2, surface, rect=None):
     if rect == None:

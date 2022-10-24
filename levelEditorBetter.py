@@ -8,10 +8,11 @@ import json
 # tk.Tk().withdraw()
 pygame.init()
 screen = pygame.display.set_mode([WIDTH, HEIGHT], pygame.RESIZABLE)
+file = "map.json"
 
 class LevelEditor:
     def __init__(self) -> None:
-        with open("map.json") as f:
+        with open(file) as f:
             self.world = json.load(f)
         # self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
         self.chunks = []
@@ -70,13 +71,13 @@ class LevelEditor:
                         self.chunks[self.currentChunk].currentMap = 0
                     else:
                         self.chunks[self.currentChunk].currentMap += 1
-                    self.texts[2].reset((255,255,255), ["foreground", "background"][self.chunks[self.currentChunk].currentMap])
+                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies"][self.chunks[self.currentChunk].currentMap])
                 elif event.key == pygame.K_DOWN:
                     if self.chunks[self.currentChunk].currentMap == 0:
                         self.chunks[self.currentChunk].currentMap = len(self.chunks[self.currentChunk].maps) - 1
                     else:
                         self.chunks[self.currentChunk].currentMap -= 1
-                    self.texts[2].reset((255,255,255), ["foreground", "background"][self.chunks[self.currentChunk].currentMap])
+                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies"][self.chunks[self.currentChunk].currentMap])
                 
                 elif event.key == pygame.K_RETURN:
                     saveFile()
@@ -129,12 +130,13 @@ class Chunk:
         self.chunkDict = chunkDict
         self.foreground = chunkDict["foregroundBarriers"]
         self.background = chunkDict["backgroundMap"]
+        self.enemies = chunkDict["enemies"]
         self.gridSize = [len(self.foreground[0]), len(self.foreground)]
         self.tileSize = None
         self.marginX = None
         self.marginY = None
         self.initializeGrid()
-        self.maps = [self.foreground, self.background]
+        self.maps = [self.foreground, self.background, self.enemies]
         self.currentMap = 0
 
     def render(self, screen):
@@ -180,7 +182,8 @@ def saveFile():
     for i in enumerate(levelEditor.world):
         levelEditor.world[i[1]]["backgroundMap"] = levelEditor.chunks[i[0]].background
         levelEditor.world[i[1]]["foregroundBarriers"] = levelEditor.chunks[i[0]].foreground
-    with open("testMap.json", "w") as f:
+        levelEditor.world[i[1]]["enemies"] = levelEditor.chunks[i[0]].enemies
+    with open(file, "w") as f:
         json.dump(levelEditor.world, f)
 
 def render(screen):

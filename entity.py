@@ -1,5 +1,5 @@
-from numpy import deg2rad
-from projectile import *
+# from projectile import *
+from playerStates import *
 
 
 
@@ -18,13 +18,13 @@ class Entity:
         self.rect.x = self.pos[0]
         self.rect.y = self.pos[1]
 
-    def handleBarrierCollision(self, entityRect: pygame.Rect=None):
+    def handleBarrierCollision(self, barrierMap, entityRect: pygame.Rect=None):
         if entityRect == None:
             entityRect = self.rect
-        for i in range(len(world.foregroundMap)):
-            for j in range(len(world.foregroundMap[i])):
-                if world.foregroundMap[i][j] != 0:
-                    rect = (world.foregroundMap[i][j].rect)
+        for i in range(len(barrierMap)):
+            for j in range(len(barrierMap[i])):
+                if barrierMap[i][j] != 0:
+                    rect = (barrierMap[i][j].rect)
                     if entityRect.colliderect(rect):
                         return rect
         return None
@@ -53,8 +53,8 @@ class Player(Entity):
         self.currentState.update()
         
 
-    def handleInput(self, events):
-        self.currentState.handleInput(events)
+    def handleInput(self, events, barrierMap): # BUG need to put in new parameter
+        self.currentState.handleInput(events, barrierMap)
 
 class FixedEnemy(Entity):
     size = Tile.tileSize
@@ -91,7 +91,6 @@ class FixedEnemy(Entity):
     
     def launchBullet(self, pos):
         self.bullets.append(Bullet(self.rect.center, pos))
-        # self.bullets[-1].setTarget(pos)
         self.readyToLaunch = False
         pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
 

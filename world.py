@@ -1,34 +1,48 @@
-from utils import *
+# from utils import *
 import json
+from entity import *
 
-camera = Camera()
+# camera = Camera()
+file = "map.json"
+player = Player()
 
 class World:
     def __init__(self) -> None:
+        with open(file) as f:
+            self.world = json.load(f)
         self.chunks = []
+        for key in self.world:
+            self.chunks.append(Chunk(self.world[key]))
         self.currentChunk = 0
     
+    def getCurrentChunk(self):
+        return self.chunks[self.currentChunk]
+    
     def render(self, screen):
-        pass
+        self.getCurrentChunk().render(screen)
 
     def update(self):
-        pass
+        self.getCurrentChunk().update()
+        Bullet.checkAllBulletsCollision(self.getCurrentChunk().foregroundMap)
 
     def handleInput(self, events):
-        pass
+        self.getCurrentChunk().handleInput(events)
 
 class Chunk:
-    def __init__(self) -> None:
-        with open("map.json") as f:
-            content = json.load(f)
-            self.backgroundMap = content["chunk1"]["backgroundMap"]
-            self.foregroundMap = content["chunk1"]["foregroundBarriers"]
-        self.tileSize = 60
+    def __init__(self, chunkDict) -> None:
+        self.chunkDict = chunkDict
+        self.backgroundMap = chunkDict["backgroundMap"]
+        self.foregroundMap = chunkDict["foregroundBarriers"]
+        self.enemyMap = chunkDict["enemies"]
+        self.enemies = []
         for i in range(len(self.backgroundMap)):
             for j in range(len(self.backgroundMap[i])):
                 self.backgroundMap[i][j] = BackgroundTile(j, i, self.backgroundMap[i][j])
                 if self.foregroundMap[i][j] != 0:
                     self.foregroundMap[i][j] = ForegroundTile(j, i, self.foregroundMap[i][j])
+                if self.enemyMap[i][j] != 0:
+                    if self.enemyMap[i][j] == 1:
+                        self.enemies.append(FixedEnemy((i,j), randint(500,5000)))
 
 
     def render(self, screen):
@@ -37,32 +51,18 @@ class Chunk:
                 self.backgroundMap[i][j].drawTile(screen)
                 if self.foregroundMap[i][j] != 0:
                     self.foregroundMap[i][j].drawTile(screen)
+        for enemy in self.enemies:
+            enemy.render(screen)
+        
+    def update(self):
+        for enemy in self.enemies:
+            enemy.update()
+            if enemy.readyToLaunch:
+                if measureDistance(enemy.pos, player.pos) <= 200:
+                    enemy.launchBullet(player.rect.center)
 
-
-class Tile:
-    tileSize = 70
-    def __init__(self, x, y, type) -> None:
-        self.rect: pygame.Rect = pygame.Rect(x*Tile.tileSize, y*Tile.tileSize, Tile.tileSize, Tile.tileSize)
-        self.surf: pygame.Surface = pygame.Surface(self.rect.size)
-        self.type = type
-        self.color = (255,255,255)
+    def handleInput(self, events):
+        for enemy in self.enemies:
+            enemy.handleInput(events)
     
-    def drawTile(self, surface):
-        surface.blit(self.surf, camera.project(self.rect).topleft)
-
-
-class BackgroundTile(Tile):
-    colors = [(0,0,50), (10,10,60)]
-    def __init__(self, x, y, type) -> None:
-        super().__init__(x, y, type)
-        self.color = BackgroundTile.colors[type]
-        self.surf.fill(self.color)
-
-class ForegroundTile(Tile):
-    colors = [(60,60,120)]
-    def __init__(self, x, y, type) -> None:
-        super().__init__(x, y, type)
-        self.color = ForegroundTile.colors[type-1]
-        self.surf.fill(self.color)
-
 

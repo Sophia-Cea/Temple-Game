@@ -1,17 +1,19 @@
 import pygame
 import sys
 from state import *
-import utils
 
 # TODO next:
 # refactor the enemy handling system so that they are in the json map, 
 # and they are generated in the world and handled in the world (render, update)
+
+# TODO find where handleBarrierCollision is called and update parameters
 
 # ask andrew:
 # how should the player be able to control where they shoot?
 # should the player be free to move all over the screen (including diagonals) or only up/down left/right?
 # how should the camera move? just follow the player anywhere they go or be more 
 # steady and stop at the edges and stuff? (ask sophia for detailed description of this)
+# can i make Player, world, and camera static?
 
 '''
     TODO
@@ -28,6 +30,7 @@ import utils
     - enemy health and damage
     - inventory
         - keys
+            - maybe keys actually just exist in the top corner
         - pieces of a broken jewel
     - main menu
     - pause menu
@@ -36,8 +39,6 @@ import utils
     - ???
     - profit
 '''
-
-
 
 
 pygame.init()
@@ -49,7 +50,7 @@ stateManager.push(PlayState())
 
 running = True
 while running:
-    utils.clock.tick()
+    clock.tick()
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:

@@ -1,4 +1,7 @@
-from world import *
+# from world import *
+from projectile import *
+
+# world = World()
 
 class State:
     def __init__(self, player) -> None:
@@ -30,7 +33,7 @@ class IdleState(State):
         self.animation[1].fill((0,255,0))
         self.animation[2].fill((0,0,255))
     
-    def handleInput(self, events):
+    def handleInput(self, events, barrierMap=None):
         super().handleInput(events)
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -46,36 +49,36 @@ class MoveState(State):
         self.animation[0].fill((255,255,255))
         self.animation[1].fill((0,0,0))
         
-    def handleInput(self, events):
+    def handleInput(self, events, barrierMap):
         super().handleInput(events)
         dt = delta()
         keys = pygame.key.get_pressed()
         if not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT] and not keys[pygame.K_DOWN] and not keys[pygame.K_UP]:
             self.player.currentState = self.player.states["idle"]
 
-        if keys[pygame.K_LEFT]:
-            rect = self.player.handleBarrierCollision(pygame.Rect(self.player.rect.x - self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
+        if keys[pygame.K_LEFT]: # BUG BUG BUG BAD BUG
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x - self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
             if rect == None:
                 self.player.pos[0] -= self.player.speed * dt
             else: 
                 self.player.pos[0] -= (self.player.pos[0] - rect.right) * dt
 
         if keys[pygame.K_RIGHT]:
-            rect = self.player.handleBarrierCollision(pygame.Rect(self.player.rect.x + self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x + self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
             if rect == None:
                 self.player.pos[0] += self.player.speed * dt
             else:
                 self.player.pos[0] += (rect.left - self.player.rect.right) * dt
 
         if keys[pygame.K_UP]:
-            rect = self.player.handleBarrierCollision(pygame.Rect(self.player.rect.x, self.player.rect.y - self.player.speed*dt, self.player.rect.width, self.player.rect.height))
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x, self.player.rect.y - self.player.speed*dt, self.player.rect.width, self.player.rect.height))
             if rect == None:
                 self.player.pos[1] -= self.player.speed * dt
             else:
                 self.player.pos[1] -= (self.player.rect.top - rect.bottom) * dt
 
         if keys[pygame.K_DOWN]:
-            rect = self.player.handleBarrierCollision(pygame.Rect(self.player.rect.x, self.player.rect.y + self.player.speed * dt, self.player.rect.width, self.player.rect.height))
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x, self.player.rect.y + self.player.speed * dt, self.player.rect.width, self.player.rect.height))
             if rect == None:
                 self.player.pos[1] += self.player.speed * dt
             else:

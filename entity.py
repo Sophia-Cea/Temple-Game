@@ -6,13 +6,10 @@ from playerStates import *
 class Entity:
     def __init__(self) -> None:
         self.pos = [950, 800]
-        self.rect = pygame.Rect(self.pos[0], self.pos[1], 50,50)
-        self.surface = pygame.Surface(self.rect.size)
-        self.surface.fill((255,0,255))
+        self.rect = pygame.Rect(self.pos[0], self.pos[1], 64, 120)
 
     def render(self, screen):
-        r = self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)
-        screen.blit(self.surface, (r.x, r.y))
+        pass
         
     def update(self):
         self.rect.x = self.pos[0]
@@ -35,20 +32,32 @@ class Player(Entity):
         super().__init__()
         self.lives = 3
         self.speed = 300
-        self.surface = pygame.Surface(self.rect.size)
-        self.surface.fill((255,0,0))
-        self.states = {
-            "idle" : IdleState(self),
-            "moving" : MoveState(self)
-        }
-        self.currentState = self.states["idle"]
+        self.rect = pygame.Rect(800, 800, 64, 120)
         self.health = 5 #lives
+        self.weapons = {
+            "mace" : True,
+            "staff" : True,
+            "gun" : True
+        }
+        self.weapon = "mace"
+        self.currentState = StateGenerator.setState("idle", self)
+
+    def setWeapon(self, weapon):
+        if self.weapons[weapon] == True:
+            print("true")
+            self.weapon = weapon
+    
+    def getState(self):
+        if type(self.currentState) == MoveState:
+            return "moving"
+        elif type(self.currentState) == IdleState:
+            return "idle"
+        elif type(self.currentState) == AttackState:
+            return "attacking"
 
     def render(self, screen):
         super().render(screen)
         self.currentState.render(screen, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2))
-        for i in range(self.health):
-            pygame.draw.circle(screen, (255,0,0), (35+i*30, 30), 10)
 
     def update(self):
         super().update()
@@ -56,11 +65,16 @@ class Player(Entity):
         self.currentState.update()
     
     def takeDamage(self, amt):
-        self.health -= amt
+        if self.getState() != "attacking":
+            self.health -= amt
         
 
     def handleInput(self, events, barrierMap): # BUG need to put in new parameter
-        self.currentState.handleInput(events, barrierMap)
+        if self.getState() != "moving":
+            self.currentState.handleInput(events)
+        else:
+            self.currentState.handleInput(events, barrierMap)
+
 
 class FixedEnemy(Entity):
     size = Tile.tileSize
@@ -75,6 +89,8 @@ class FixedEnemy(Entity):
         #     self.bullets.append(Bullet(self.rect.center))
         pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
         self.readyToLaunch = False
+        self.surface = pygame.Surface(self.rect.size)
+        self.surface.fill((255,0,255))
 
     def update(self):
         super().update()
@@ -88,6 +104,8 @@ class FixedEnemy(Entity):
     def render(self, screen):
         for bullet in self.bullets:
             bullet.render(screen)
+        r = self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)
+        screen.blit(self.surface, (r.x, r.y))
         super().render(screen)
     
     def handleInput(self, events):

@@ -20,6 +20,8 @@ class World:
     
     def render(self, screen):
         self.getCurrentChunk().render(screen)
+        for i in range(player.health):
+            pygame.draw.circle(screen, (255,0,0), (35+i*30, 30), 10)
 
     def update(self):
         self.getCurrentChunk().update()

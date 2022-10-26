@@ -1,6 +1,4 @@
 # from world import *
-from os import stat
-from soupsieve import select
 from projectile import *
 
 # world = World()

@@ -20,6 +20,11 @@ class LevelEditor:
         self.currentChunk = 0
         self.texts = [Text("Level Editor", "subtitle", (255,255,255), (50,1), True), Text("Chunk: " + str(self.currentChunk+1), "paragraph", (255,255,255), (50, 8), True), Text("Foreground", "paragraph", (255,255,255), (50, 87), True)]
         self.selectedColor = 1
+        self.isDrawing = False
+        self.spacing = 10
+        self.marginX = 10
+        self.marginY = 10
+        self.menuTileSize = ((HEIGHT - 2*self.marginY)/(len(Chunk.tiles))) - self.spacing
 
 
     def render(self, screen):
@@ -29,12 +34,20 @@ class LevelEditor:
         self.chunks[self.currentChunk].render(screen)
 
         for key in Chunk.tiles:
-            screen.blit(pygame.transform.scale(Chunk.tiles[key], (50, 50)), (10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56))
+            screen.blit(pygame.transform.scale(Chunk.tiles[key], (self.menuTileSize, self.menuTileSize)), (self.marginX, (self.marginY + (key-1)*(self.menuTileSize+self.spacing))))
             if key == self.selectedColor:
-                pygame.draw.rect(screen, (255,0,0), pygame.Rect(10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56, 50,50), 3)
+                pygame.draw.rect(screen, (255,0,0), pygame.Rect(self.marginX, (self.marginY + (key-1)*(self.menuTileSize+self.spacing)), self.menuTileSize, self.menuTileSize), 3)
 
     def update(self):
         self.chunks[self.currentChunk].update()
+        # if self.isDrawing:
+        #     x,y = pygame.mouse.get_pos()
+        #     if x in range(int(self.chunks[self.currentChunk].marginX), int(WIDTH-self.chunks[self.currentChunk].marginX)) and y in range(int(self.chunks[self.currentChunk].marginY), int(HEIGHT-self.chunks[self.currentChunk].marginY)):
+        #         self.chunks[self.currentChunk].handleInput(x,y, self.selectedColor)
+        #     else: #means its outside the grid
+        #         for key in Chunk.tiles:
+        #             if pygame.Rect(10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56, 50,50).collidepoint((x,y)):
+        #                 self.selectedColor = key
 
     def handleInput(self, events):
         for event in events:
@@ -100,8 +113,10 @@ class LevelEditor:
                         self.chunks[self.currentChunk].maps[0][i].pop(-1)
                     self.chunks[self.currentChunk].gridSize[0] -= 1
                     self.chunks[self.currentChunk].initializeGrid()
-                    
-            if event.type == pygame.MOUSEBUTTONUP:
+            
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     self.isDrawing = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 x,y = pygame.mouse.get_pos()
                 if x in range(int(self.chunks[self.currentChunk].marginX), int(WIDTH-self.chunks[self.currentChunk].marginX)) and y in range(int(self.chunks[self.currentChunk].marginY), int(HEIGHT-self.chunks[self.currentChunk].marginY)):
                     self.chunks[self.currentChunk].handleInput(x,y, self.selectedColor)
@@ -109,7 +124,8 @@ class LevelEditor:
                     for key in Chunk.tiles:
                         if pygame.Rect(10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56, 50,50).collidepoint((x,y)):
                             self.selectedColor = key
-                    
+                self.isDrawing = False
+
 
 class Chunk:
     maxGridWidth = 70   # percent of width
@@ -125,7 +141,11 @@ class Chunk:
         8: pygame.image.load("assets/tiles/tile_8.png"),
         9: pygame.image.load("assets/tiles/tile_9.png"),
         10: pygame.image.load("assets/tiles/tile_10.png"),
-        11: pygame.image.load("assets/tiles/tile_11.png")
+        11: pygame.image.load("assets/tiles/tile_11.png"),
+        12: pygame.image.load("assets/tiles/tile_12.png"),
+        13: pygame.image.load("assets/tiles/tile_13.png"),
+        14: pygame.image.load("assets/tiles/tile_14.png"),
+        15: pygame.image.load("assets/tiles/tile_15.png")
     }
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -204,13 +224,6 @@ def run(screen, events):
     handleInput(events)
 
 running = True
-# file_path = filedialog.askopenfilename(title="Select Level File",
-#                             filetypes=[("JSON Files", "*.json")],
-#                             defaultextension="json")
-# if file_path is None:
-#     pygame.quit()
-#     sys.exit()
-# past this point, the file definitely exists (program terminates otherwise) 
     
 levelEditor = LevelEditor() 
 

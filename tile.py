@@ -25,7 +25,11 @@ class BackgroundTile(Tile):
         8: pygame.image.load("assets/tiles/tile_8.png"),
         9: pygame.image.load("assets/tiles/tile_9.png"),
         10: pygame.image.load("assets/tiles/tile_10.png"),
-        11: pygame.image.load("assets/tiles/tile_11.png")
+        11: pygame.image.load("assets/tiles/tile_11.png"),
+        12: pygame.image.load("assets/tiles/tile_12.png"),
+        13: pygame.image.load("assets/tiles/tile_13.png"),
+        14: pygame.image.load("assets/tiles/tile_14.png"),
+        15: pygame.image.load("assets/tiles/tile_15.png")
     }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)
@@ -44,7 +48,11 @@ class ForegroundTile(Tile):
         8: pygame.image.load("assets/tiles/tile_8.png"),
         9: pygame.image.load("assets/tiles/tile_9.png"),
         10: pygame.image.load("assets/tiles/tile_10.png"),
-        11: pygame.image.load("assets/tiles/tile_11.png")
+        11: pygame.image.load("assets/tiles/tile_11.png"),
+        12: pygame.image.load("assets/tiles/tile_12.png"),
+        13: pygame.image.load("assets/tiles/tile_13.png"),
+        14: pygame.image.load("assets/tiles/tile_14.png"),
+        15: pygame.image.load("assets/tiles/tile_15.png")
     }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)

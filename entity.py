@@ -90,8 +90,9 @@ class FixedEnemy(Entity):
         #     self.bullets.append(Bullet(self.rect.center))
         pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
         self.readyToLaunch = False
-        self.surface = pygame.Surface(self.rect.size)
-        self.surface.fill((255,0,255))
+        # self.surface = pygame.Surface(self.rect.size)
+        # self.surface.fill((255,0,255))
+        self.surface = pygame.transform.scale(pygame.image.load("assets/enemies/nut_devil_1.png"), self.rect.size)
 
     def update(self):
         super().update()

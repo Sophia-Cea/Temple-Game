@@ -232,7 +232,6 @@ class AttackState(State):
         self.animations["staff"][1].fill((0,255,0))
         self.animations["gun"][0].fill((0,0,255))
         self.animations["gun"][1].fill((0,0,255))
-        print(self.player.weapon)
         self.animation = self.animations[self.player.weapon]
 
     def handleInput(self, events):

@@ -45,7 +45,6 @@ class Player(Entity):
 
     def setWeapon(self, weapon):
         if self.weapons[weapon] == True:
-            print("true")
             self.weapon = weapon
     
     def getState(self):

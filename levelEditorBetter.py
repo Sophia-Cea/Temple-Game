@@ -145,7 +145,8 @@ class Chunk:
         12: pygame.image.load("assets/tiles/tile_12.png"),
         13: pygame.image.load("assets/tiles/tile_13.png"),
         14: pygame.image.load("assets/tiles/tile_14.png"),
-        15: pygame.image.load("assets/tiles/tile_15.png")
+        15: pygame.image.load("assets/tiles/tile_15.png"),
+        16: pygame.image.load("assets/decorativeItems/torch_1.png")
     }
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -187,7 +188,6 @@ class Chunk:
         maxWidth = WIDTH*Chunk.maxGridWidth/100
         maxHeight = HEIGHT*Chunk.maxGridHeight/100
         tileSizes = [maxWidth/len(self.foreground[0]), maxHeight/len(self.foreground)]
-        print("finding tile size...")
         return min(tileSizes)
 
     def calculateMargin(self):

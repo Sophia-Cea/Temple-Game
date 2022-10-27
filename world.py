@@ -36,6 +36,10 @@ class Chunk:
         self.backgroundMap = chunkDict["backgroundMap"]
         self.foregroundMap = chunkDict["foregroundBarriers"]
         self.enemyMap = chunkDict["enemies"]
+        self.decorativeItemsMap = chunkDict["decoration"]
+        self.backgroundTiles = []
+        self.foregroundTiles = []
+        self.decorations = []
         self.enemies = []
         for i in range(len(self.backgroundMap)):
             for j in range(len(self.backgroundMap[i])):
@@ -45,14 +49,18 @@ class Chunk:
                 if self.enemyMap[i][j] != 0:
                     if self.enemyMap[i][j] == 1:
                         self.enemies.append(FixedEnemy((i,j), randint(500,5000)))
+                if self.decorativeItemsMap[i][j] != 0:
+                    self.decorations.append(AnimatedTile(j, i, self.decorativeItemsMap[i][j]))
 
 
     def render(self, screen):
-        for i in range(len(self.backgroundMap)):
-            for j in range(len(self.backgroundMap[i])):
-                self.backgroundMap[i][j].drawTile(screen)
-                if self.foregroundMap[i][j] != 0:
-                    self.foregroundMap[i][j].drawTile(screen)
+        # for i in range(len(self.backgroundMap)):
+        #     for j in range(len(self.backgroundMap[i])):
+        #         self.backgroundMap[i][j].drawTile(screen)
+        #         if self.foregroundMap[i][j] != 0:
+        #             self.foregroundMap[i][j].drawTile(screen)
+        for tile in Tile.tileList:
+            tile.drawTile(screen)
         for enemy in self.enemies:
             enemy.render(screen)
         
@@ -62,6 +70,10 @@ class Chunk:
             if enemy.readyToLaunch:
                 if measureDistance(enemy.pos, player.pos) <= 200:
                     enemy.launchBullet(player.rect.center)
+        for tile in Tile.tileList:
+            if type(tile) == AnimatedTile:
+                tile.update()
+        # for tile in 
 
     def handleInput(self, events):
         for enemy in self.enemies:

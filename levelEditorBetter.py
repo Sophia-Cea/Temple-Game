@@ -14,7 +14,6 @@ class LevelEditor:
     def __init__(self) -> None:
         with open(file) as f:
             self.world = json.load(f)
-        # self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
         self.chunks = []
         for key in self.world:
             self.chunks.append(Chunk(self.world[key]))
@@ -22,12 +21,6 @@ class LevelEditor:
         self.texts = [Text("Level Editor", "subtitle", (255,255,255), (50,1), True), Text("Chunk: " + str(self.currentChunk+1), "paragraph", (255,255,255), (50, 8), True), Text("Foreground", "paragraph", (255,255,255), (50, 87), True)]
         self.selectedColor = 1
 
-    # def setFile(self, file_path):
-    #     with open(file_path) as f:
-    #         self.world = json.load(f)
-    #     self.chunks = [Chunk(self.world["chunk1"]), Chunk(self.world["chunk2"]), Chunk(self.world["chunk3"]), Chunk(self.world["chunk4"])]
-    #     self.currentChunk = 0
-    #     self.loaded = True
 
     def render(self, screen):
         screen.fill((0,0,0))
@@ -35,10 +28,10 @@ class LevelEditor:
             text.draw(screen)
         self.chunks[self.currentChunk].render(screen)
 
-        for key in Chunk.colors:
-            pygame.draw.rect(screen, Chunk.colors[key], pygame.Rect(10, (HEIGHT - len(Chunk.colors)*56)/2 + (key-1)*56, 50,50))
+        for key in Chunk.tiles:
+            screen.blit(pygame.transform.scale(Chunk.tiles[key], (50, 50)), (10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56))
             if key == self.selectedColor:
-                pygame.draw.rect(screen, (255,0,0), pygame.Rect(10, (HEIGHT - len(Chunk.colors)*56)/2 + (key-1)*56, 50,50), 3)
+                pygame.draw.rect(screen, (255,0,0), pygame.Rect(10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56, 50,50), 3)
 
     def update(self):
         self.chunks[self.currentChunk].update()
@@ -113,18 +106,26 @@ class LevelEditor:
                 if x in range(int(self.chunks[self.currentChunk].marginX), int(WIDTH-self.chunks[self.currentChunk].marginX)) and y in range(int(self.chunks[self.currentChunk].marginY), int(HEIGHT-self.chunks[self.currentChunk].marginY)):
                     self.chunks[self.currentChunk].handleInput(x,y, self.selectedColor)
                 else: #means its outside the grid
-                    for key in Chunk.colors:
-                        if pygame.Rect(10, (HEIGHT - len(Chunk.colors)*56)/2 + (key-1)*56, 50,50).collidepoint((x,y)):
+                    for key in Chunk.tiles:
+                        if pygame.Rect(10, (HEIGHT - len(Chunk.tiles)*56)/2 + (key-1)*56, 50,50).collidepoint((x,y)):
                             self.selectedColor = key
                     
 
 class Chunk:
     maxGridWidth = 70   # percent of width
     maxGridHeight = 70
-    colors = {
-        1: (150,150,200),
-        2: (200,150,150),
-        3: (150,200,150)
+    tiles = {
+        1: pygame.image.load("assets/tiles/tile_1.png"),
+        2: pygame.image.load("assets/tiles/tile_2.png"),
+        3: pygame.image.load("assets/tiles/tile_3.png"),
+        4: pygame.image.load("assets/tiles/tile_4.png"),
+        5: pygame.image.load("assets/tiles/tile_5.png"),
+        6: pygame.image.load("assets/tiles/tile_6.png"),
+        7: pygame.image.load("assets/tiles/tile_7.png"),
+        8: pygame.image.load("assets/tiles/tile_8.png"),
+        9: pygame.image.load("assets/tiles/tile_9.png"),
+        10: pygame.image.load("assets/tiles/tile_10.png"),
+        11: pygame.image.load("assets/tiles/tile_11.png")
     }
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -143,7 +144,8 @@ class Chunk:
         for i in range(self.gridSize[1]):
             for j in range(self.gridSize[0]):
                 if self.maps[self.currentMap][i][j] != 0:
-                    pygame.draw.rect(screen, Chunk.colors[self.maps[self.currentMap][i][j]], pygame.Rect(self.marginX+j*self.tileSize, self.marginY+i*self.tileSize, self.tileSize, self.tileSize))
+                    screen.blit(pygame.transform.scale(Chunk.tiles[self.maps[self.currentMap][i][j]], (self.tileSize, self.tileSize)), (self.marginX+j*self.tileSize, self.marginY+i*self.tileSize))
+                    # pygame.draw.rect(screen, Chunk.tiles[self.maps[self.currentMap][i][j]], pygame.Rect(self.marginX+j*self.tileSize, self.marginY+i*self.tileSize, self.tileSize, self.tileSize))
         for i in range(self.gridSize[0]+1):
             pygame.draw.line(screen, (255,255,255), (self.marginX + i*self.tileSize, self.marginY), (self.marginX + i*self.tileSize, HEIGHT-self.marginY), 1)
         for j in range(self.gridSize[1]+1):

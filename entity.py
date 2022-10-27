@@ -32,6 +32,7 @@ class Player(Entity):
         super().__init__()
         self.lives = 3
         self.speed = 300
+        self.lastDirectionFaced = "front"
         self.rect = pygame.Rect(800, 800, 64, 120)
         self.health = 5 #lives
         self.weapons = {

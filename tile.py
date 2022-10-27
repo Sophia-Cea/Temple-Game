@@ -7,24 +7,47 @@ class Tile:
         self.rect: pygame.Rect = pygame.Rect(x*Tile.tileSize, y*Tile.tileSize, Tile.tileSize, Tile.tileSize)
         self.surf: pygame.Surface = pygame.Surface(self.rect.size)
         self.type = type
-        self.color = (255,255,255)
     
     def drawTile(self, surface):
         surface.blit(self.surf, camera.project(self.rect).topleft)
 
 
 class BackgroundTile(Tile):
-    colors = [(0,0,50), (10,10,60)]
+    tiles = {
+        0: pygame.Surface((16,16)),
+        1: pygame.image.load("assets/tiles/tile_1.png"),
+        2: pygame.image.load("assets/tiles/tile_2.png"),
+        3: pygame.image.load("assets/tiles/tile_3.png"),
+        4: pygame.image.load("assets/tiles/tile_4.png"),
+        5: pygame.image.load("assets/tiles/tile_5.png"),
+        6: pygame.image.load("assets/tiles/tile_6.png"),
+        7: pygame.image.load("assets/tiles/tile_7.png"),
+        8: pygame.image.load("assets/tiles/tile_8.png"),
+        9: pygame.image.load("assets/tiles/tile_9.png"),
+        10: pygame.image.load("assets/tiles/tile_10.png"),
+        11: pygame.image.load("assets/tiles/tile_11.png")
+    }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)
-        self.color = BackgroundTile.colors[type]
-        self.surf.fill(self.color)
+        print(type)
+        self.surf = pygame.transform.scale(BackgroundTile.tiles[type], (Tile.tileSize, Tile.tileSize))
 
 class ForegroundTile(Tile):
-    colors = [(60,60,120)]
+    tiles = {
+        1: pygame.image.load("assets/tiles/tile_1.png"),
+        2: pygame.image.load("assets/tiles/tile_2.png"),
+        3: pygame.image.load("assets/tiles/tile_3.png"),
+        4: pygame.image.load("assets/tiles/tile_4.png"),
+        5: pygame.image.load("assets/tiles/tile_5.png"),
+        6: pygame.image.load("assets/tiles/tile_6.png"),
+        7: pygame.image.load("assets/tiles/tile_7.png"),
+        8: pygame.image.load("assets/tiles/tile_8.png"),
+        9: pygame.image.load("assets/tiles/tile_9.png"),
+        10: pygame.image.load("assets/tiles/tile_10.png"),
+        11: pygame.image.load("assets/tiles/tile_11.png")
+    }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)
-        self.color = ForegroundTile.colors[type-1]
-        self.surf.fill(self.color)
+        self.surf = pygame.transform.scale(ForegroundTile.tiles[type], (Tile.tileSize, Tile.tileSize))
 
 

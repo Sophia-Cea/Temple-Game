@@ -52,10 +52,28 @@ class State:
 class IdleState(State):
     def __init__(self, player) -> None:
         super().__init__(player)
-        self.animation = [pygame.Surface((50,50)), pygame.Surface((50,50)), pygame.Surface((50,50))]
-        self.animation[0].fill((255,0,0))
-        self.animation[1].fill((0,255,0))
-        self.animation[2].fill((0,0,255))
+        # self.animation = [pygame.Surface((50,50)), pygame.Surface((50,50)), pygame.Surface((50,50))]
+        # self.animation[0].fill((255,0,0))
+        # self.animation[1].fill((0,255,0))
+        # self.animation[2].fill((0,0,255))
+        self.animations = {
+            "left" : [
+                pygame.transform.scale(pygame.image.load("assets/player/left_idle_1.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/left_idle_2.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/left_idle_1.png"), (64, 120))
+            ],
+            "right" : [
+                pygame.transform.scale(pygame.image.load("assets/player/right_idle_1.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/right_idle_2.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/right_idle_1.png"), (64, 120))
+            ],
+            "front" : [
+                pygame.transform.scale(pygame.image.load("assets/player/front_idle_1.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/front_idle_2.png"), (64, 120)),
+                pygame.transform.scale(pygame.image.load("assets/player/front_idle_1.png"), (64, 120))
+            ],
+        }
+        self.animation = self.animations[self.player.lastDirectionFaced]
     
     def handleInput(self, events):
         super().handleInput(events)
@@ -127,6 +145,12 @@ class MoveState(State):
         keys = pygame.key.get_pressed()
 
         if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
+            if self.animation == self.animations["left"]:
+                self.player.lastDirectionFaced = "left"
+            elif self.animation == self.animations["right"]:
+                self.player.lastDirectionFaced = "right"
+            else:
+                self.player.lastDirectionFaced = "front"
             self.player.currentState = StateGenerator.setState("idle", self.player)
 
         if keys[pygame.K_a]:

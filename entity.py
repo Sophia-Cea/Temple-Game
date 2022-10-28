@@ -77,7 +77,7 @@ class Player(Entity):
 
 
 class FixedEnemy(Entity):
-    size = Tile.tileSize
+    size = Tile.tileSize*2
     def __init__(self, pos, bulletFrq=3000) -> None:
         super().__init__()
         # pos is given in the form of a position in the grid

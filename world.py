@@ -14,6 +14,7 @@ class World:
         for key in self.world:
             self.chunks.append(Chunk(self.world[key]))
         self.currentChunk = 0
+        self.heartImg = pygame.transform.scale(pygame.image.load("assets/other/heart.png"), (30,30))
     
     def getCurrentChunk(self):
         return self.chunks[self.currentChunk]
@@ -21,7 +22,8 @@ class World:
     def render(self, screen):
         self.getCurrentChunk().render(screen)
         for i in range(player.health):
-            pygame.draw.circle(screen, (255,0,0), (35+i*30, 30), 10)
+            # pygame.draw.circle(screen, (255,0,0), (35+i*30, 30), 10)
+            screen.blit(self.heartImg, (35+i*40, 30))
 
     def update(self):
         self.getCurrentChunk().update()

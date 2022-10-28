@@ -77,13 +77,13 @@ class LevelEditor:
                         self.chunks[self.currentChunk].currentMap = 0
                     else:
                         self.chunks[self.currentChunk].currentMap += 1
-                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies"][self.chunks[self.currentChunk].currentMap])
+                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies", "decorations"][self.chunks[self.currentChunk].currentMap])
                 elif event.key == pygame.K_DOWN:
                     if self.chunks[self.currentChunk].currentMap == 0:
                         self.chunks[self.currentChunk].currentMap = len(self.chunks[self.currentChunk].maps) - 1
                     else:
                         self.chunks[self.currentChunk].currentMap -= 1
-                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies"][self.chunks[self.currentChunk].currentMap])
+                    self.texts[2].reset((255,255,255), ["foreground", "background", "enemies", "decorations"][self.chunks[self.currentChunk].currentMap])
                 
                 elif event.key == pygame.K_RETURN:
                     saveFile()
@@ -153,12 +153,13 @@ class Chunk:
         self.foreground = chunkDict["foregroundBarriers"]
         self.background = chunkDict["backgroundMap"]
         self.enemies = chunkDict["enemies"]
+        self.decorations = chunkDict["decoration"]
         self.gridSize = [len(self.foreground[0]), len(self.foreground)]
         self.tileSize = None
         self.marginX = None
         self.marginY = None
         self.initializeGrid()
-        self.maps = [self.foreground, self.background, self.enemies]
+        self.maps = [self.foreground, self.background, self.enemies, self.decorations]
         self.currentMap = 0
 
     def render(self, screen):
@@ -205,6 +206,7 @@ def saveFile():
         levelEditor.world[i[1]]["backgroundMap"] = levelEditor.chunks[i[0]].background
         levelEditor.world[i[1]]["foregroundBarriers"] = levelEditor.chunks[i[0]].foreground
         levelEditor.world[i[1]]["enemies"] = levelEditor.chunks[i[0]].enemies
+        levelEditor.world[i[1]]["decoration"] = levelEditor.chunks[i[0]].decorations
     with open(file, "w") as f:
         json.dump(levelEditor.world, f)
 

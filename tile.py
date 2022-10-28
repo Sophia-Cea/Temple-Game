@@ -2,7 +2,7 @@ from utils import *
 
 
 class Tile:
-    tileSize = 70
+    tileSize = 64
     tileList = []
     def __init__(self, x, y, type) -> None:
         self.rect: pygame.Rect = pygame.Rect(x*Tile.tileSize, y*Tile.tileSize, Tile.tileSize, Tile.tileSize)
@@ -65,7 +65,7 @@ class AnimatedTile(Tile):
             pygame.transform.scale(pygame.image.load("assets/decorativeItems/torch_1.png"), (Tile.tileSize, Tile.tileSize)),
             pygame.transform.scale(pygame.image.load("assets/decorativeItems/torch_2.png"), (Tile.tileSize, Tile.tileSize)),
             pygame.transform.scale(pygame.image.load("assets/decorativeItems/torch_3.png"), (Tile.tileSize, Tile.tileSize)),
-            pygame.transform.scale(pygame.image.load("assets/decorativeItems/torch_2.png"), (Tile.tileSize, Tile.tileSize))
+            pygame.transform.scale(pygame.image.load("assets/decorativeItems/torch_4.png"), (Tile.tileSize, Tile.tileSize))
 
         ]
     }

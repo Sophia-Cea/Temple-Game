@@ -15,11 +15,11 @@ class Wall:
 
 class Ray:
     color = (255, 0, 0)
-    color2 = (20,50,21)
+    color2 = (10,25,11)
     def __init__(self, pos: Vector2, dir: Vector2) -> None:
         self.pos = pos
         self.dir = dir.normalize()
-        self.p2 = self.pos + self.dir * 20
+        self.radius = 5000
     
     def look_at(self, point: Vector2):
         self.dir = (point - self.pos).normalize()
@@ -48,26 +48,28 @@ class Ray:
             return None
 
     def update(self, world: list[Wall]):
-        closest_end_pt = Vector2(self.pos + self.dir * 1000000)
         closest_dist = 100000000
         for wall in world:
             end_pt = self.cast(wall.p1, wall.p2)
             if end_pt is None:
                 continue
-            d = self.pos.distance_squared_to(end_pt)
+            d = self.pos.distance_to(end_pt)
             if d < closest_dist:
                 closest_end_pt = end_pt
                 closest_dist = d
-        self.p2 = closest_end_pt
+        self.radius = closest_dist
         
     def get_pt_at_radius(self, r):
-        d = self.pos.distance_to(self.p2)
-        if d < r:
-            return self.p2
-        return Vector2(self.pos + r * self.dir)
+        if self.radius < r:
+            r = self.radius
+        return Vector2(self.pos + (r * self.dir))
         
     def draw(self, screen, camera: utils.Camera):
-        pygame.draw.line(screen, Ray.color, camera.projectVector(self.pos), camera.projectVector(self.p2))
+        p1 = camera.projectVector(self.pos)
+        p2 = camera.projectVector(self.pos + (self.radius * self.dir))
+        # (426, 230) to (510, 230)
+        # assert camera.projectVector(self.p2) == camera.projectVector(Vector2(10, -120))
+        pygame.draw.line(screen, Ray.color, p1, p2)
 
 def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
     vertices: list[Vector2] = []
@@ -94,6 +96,15 @@ def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
     bounding_rect = pygame.draw.polygon(temp_surf, Ray.color2, vertices)
     screen.blit(temp_surf, camera.projectPoint((min_x, min_y)), special_flags=pygame.BLEND_RGB_ADD)
 
+def update_rays_pos(update_mouse: bool):
+    mouse_pos = pygame.mouse.get_pos()
+    rays_pos = camera.unprojectPoint(mouse_pos)
+    for ray in rays:
+        if update_mouse:
+            ray.pos.x = rays_pos[0]
+            ray.pos.y = rays_pos[1]
+        ray.update(walls)  
+
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))
@@ -101,16 +112,33 @@ if __name__ == "__main__":
     camera = utils.Camera()
 
     rays: list[Ray] = []
-    num_rays = 60
+    num_rays = 1000
     spacing = 360 / (num_rays-1)
+    ray_pos = camera.unprojectPoint((426, 230))
+
     for i in range(num_rays):
         angle_rad = utils.deg2rad(i*spacing)
         direction = Vector2(math.cos(angle_rad), math.sin(angle_rad))
-        rays.append(Ray(Vector2(utils.WIDTH/2, utils.HEIGHT/2), direction))
-    walls = [Wall((10,10), (10,-500)), Wall((10,10), (500, 10))]
+        rays.append(Ray(Vector2(ray_pos), direction))
+    walls = [
+    Wall((10,10), (10,-500)),
+     Wall((10,10), (500, 10)),
+     Wall((200, 10),(500, -300)),
+     Wall((250, 30),(500, 300)),
+     Wall((300, 10),(400, 500)),
+    ]
 
+    ticks = 0
+    running_time = 0
     while True:
-        delta = clock.tick(60) / 1000
+        delta = clock.tick() / 1000
+        ticks+=1
+        running_time += delta
+        if running_time >= 1:
+            print(f"Ticks per second: {ticks}")
+            ticks = 0
+            running_time = 0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -124,21 +152,21 @@ if __name__ == "__main__":
             camera.yOffest += 50 * delta
         if keys[pygame.K_d]:
             camera.xOffset += 50 * delta
+        if keys[pygame.K_RETURN]:
+            print(pygame.mouse.get_pos())
                
-        mouse_pos = pygame.mouse.get_pos()
-        rays_pos = camera.unprojectPoint(mouse_pos)
-        for ray in rays:
-            ray.pos.x = rays_pos[0]
-            ray.pos.y = rays_pos[1]
-            ray.update(walls)  
-            
-        screen.fill((0,0,0))
-
-        draw_lighting(screen, camera, 100)
+        update_rays_pos(True)
     
-        for ray in rays:
-            ray.draw(screen, camera)
+        screen.fill((0,0,0))
+        draw_lighting(screen, camera, 200)
+        # draw_lighting(screen, camera, 200)
+        draw_lighting(screen, camera, 500)
+        draw_lighting(screen, camera, 1000)
+        
+        # for ray in rays:
+        #     ray.draw(screen, camera)
         for wall in walls:
             wall.draw(screen, camera)
+
 
         pygame.display.flip()

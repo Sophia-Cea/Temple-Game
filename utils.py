@@ -35,9 +35,22 @@ class Camera:
 
     def project(self, rect: pygame.Rect) -> pygame.Rect:
         return pygame.Rect(rect.x - self.xOffset + WIDTH/2, rect.y - self.yOffest + HEIGHT/2, rect.w, rect.h)
-    
+
     def projectPoint(self, pos: tuple) -> tuple:
         return (pos[0] - self.xOffset + WIDTH/2, pos[1] - self.yOffest + HEIGHT/2)
+
+    def projectVector(self, pos: pygame.Vector2) -> tuple:
+        return (pos.x - self.xOffset + WIDTH/2, pos.y - self.yOffest + HEIGHT/2)
+
+    def unprojectPoint(self, pos:tuple) -> tuple:
+        x_temp = pos[0] - WIDTH/2
+        y_temp = pos[1] - HEIGHT/2
+        return (x_temp + self.xOffset, y_temp + self.yOffest)
+
+    def unprojectVector(self, pos:pygame.Vector2) -> pygame.Vector2:
+        x_temp = pos.x - WIDTH/2
+        y_temp = pos.y - HEIGHT/2
+        return (x_temp + self.xOffset, y_temp + self.yOffest)
 
 camera = Camera()       
 

@@ -3,7 +3,7 @@ import sys
 from state import *
 
 # TODO next:
-# make enemies take damage from w
+# make enemies take damage from ww
 
 
 # ask andrew:

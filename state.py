@@ -69,7 +69,7 @@ class PlayState(State):
     def handleInput(self, events):
         super().handleInput(events)
         world.handleInput(events)
-        player.handleInput(events, world.getCurrentChunk().foregroundMap)
+        player.handleInput(events, world.getCurrentChunk().getCurrentRoom().foregroundTiles)
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:

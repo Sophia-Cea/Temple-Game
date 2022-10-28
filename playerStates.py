@@ -50,10 +50,6 @@ class State:
 class IdleState(State):
     def __init__(self, player) -> None:
         super().__init__(player)
-        # self.animation = [pygame.Surface((50,50)), pygame.Surface((50,50)), pygame.Surface((50,50))]
-        # self.animation[0].fill((255,0,0))
-        # self.animation[1].fill((0,255,0))
-        # self.animation[2].fill((0,0,255))
         self.animations = {
             "left" : [
                 pygame.transform.scale(pygame.image.load("assets/player/left_idle_1.png"), (64, 120)),

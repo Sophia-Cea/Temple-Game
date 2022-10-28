@@ -1,4 +1,5 @@
 import math
+from re import S
 import pygame
 from pygame import Vector2
 import utils
@@ -13,7 +14,8 @@ class Wall:
         pygame.draw.line(screen, (245, 225, 245), camera.projectPoint(self.p1), camera.projectPoint(self.p2), 2)
 
 class Ray:
-    color = (220, 254, 233)
+    color = (255, 0, 0)
+    color2 = (20,50,21)
     def __init__(self, pos: Vector2, dir: Vector2) -> None:
         self.pos = pos
         self.dir = dir.normalize()
@@ -58,9 +60,39 @@ class Ray:
                 closest_dist = d
         self.p2 = closest_end_pt
         
+    def get_pt_at_radius(self, r):
+        d = self.pos.distance_to(self.p2)
+        if d < r:
+            return self.p2
+        return Vector2(self.pos + r * self.dir)
+        
     def draw(self, screen, camera: utils.Camera):
         pygame.draw.line(screen, Ray.color, camera.projectVector(self.pos), camera.projectVector(self.p2))
 
+def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
+    vertices: list[Vector2] = []
+    max_x = -1000000
+    min_x = 10000000
+    max_y = -1000000
+    min_y = 1000000
+    for ray in rays:
+        pt = ray.get_pt_at_radius(radius)
+        max_x = max(pt.x, max_x)
+        max_y = max(pt.y, max_y)
+        min_x = min(pt.x, min_x)
+        min_y = min(pt.y, min_y)
+        vertices.append(ray.get_pt_at_radius(radius))
+    
+    polygon_width = abs(max_x - min_x)
+    polygon_height = abs(max_y - min_y)
+
+    for vertice in vertices:
+        vertice.x -= min_x
+        vertice.y -= min_y
+
+    temp_surf = pygame.Surface((int(polygon_width), int(polygon_height)))
+    bounding_rect = pygame.draw.polygon(temp_surf, Ray.color2, vertices)
+    screen.blit(temp_surf, camera.projectPoint((min_x, min_y)), special_flags=pygame.BLEND_RGB_ADD)
 
 if __name__ == "__main__":
     pygame.init()
@@ -102,6 +134,8 @@ if __name__ == "__main__":
             
         screen.fill((0,0,0))
 
+        draw_lighting(screen, camera, 100)
+    
         for ray in rays:
             ray.draw(screen, camera)
         for wall in walls:

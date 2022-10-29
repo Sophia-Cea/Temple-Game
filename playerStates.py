@@ -212,8 +212,6 @@ class MoveState(State):
                     elif keys[pygame.K_s]:
                         self.animation = self.animations["down"]
 
-
-
 class AttackState(State):
     def __init__(self, player) -> None:
         super().__init__(player)

@@ -1,11 +1,10 @@
 # from utils import *
 import json
-from re import T
 from entity import *
 
 # camera = Camera()
 file = "newMap.json"
-player = Player()
+player = Player((3,2))
 
 class World:
     def __init__(self) -> None:
@@ -91,18 +90,18 @@ class Chunk:
             self.rooms.append(Room(room))
     
     def render(self, screen):
-        self.rooms[self.currentRoom].render(screen)
+        self.getCurrentRoom().render(screen)
     
     def getCurrentRoom(self):
         return self.rooms[self.currentRoom]
 
     def update(self):
-        self.rooms[self.currentRoom].update()
-        if self.rooms[self.currentRoom].needToChangeRoom:
+        self.getCurrentRoom().update()
+        if self.getCurrentRoom().needToChangeRoom:
             self.changeRooms()
 
     def handleInput(self, events):
-        self.rooms[self.currentRoom].handleInput(events)
+        self.getCurrentRoom().handleInput(events)
 
     def changeRooms(self): # BUG maybe move this to room..? dont think so
         for i in range(len(self.doorConnections)):
@@ -119,6 +118,28 @@ class Chunk:
                     room[1].needToChangeRoom = False
                     break
 
+        for room in self.rooms:
+            for door in room.doors:
+                if door.id == self.nextDoorId:
+                    player.pos = [door.pos[1]*Tile.tileSize, door.pos[0]*Tile.tileSize]
+                    if door.isVertical: #BUG from here down is all fucked up.
+                        if door.pos[1] == 0: # this one is ok
+                            player.pos[0] += 40
+                            print("moving you 40 to the right")
+                        elif door.pos[1] == len(room.backgroundMap[0])-2:
+                            player.pos[0] -= 40
+                            print("moving you 40 to the left")
+                    else:
+                        if door.pos[0] == 0: # this one is ok
+                            player.pos[1] += 40
+                            print("moving you 40 down")
+                        elif door.pos[1] == len(room.backgroundMap)-2:
+                            player.pos[1] -= 40
+                            print("moving you 40 up")
+                    break
+        self.nextDoorId = None
+
+
 class Room:
     def __init__(self, roomDict) -> None:
         self.dict = roomDict
@@ -129,6 +150,7 @@ class Room:
         self.enemyMap = roomDict["enemies"]
         self.decorMap = roomDict["decor"]
         self.doors = roomDict["doors"]
+        self.centerOfRoom = [] #TODO this will be used for the doors to determine where the inside of the room is
 
         self.backgroundTiles = []
         self.foregroundTiles = []
@@ -194,6 +216,11 @@ class Door:
         self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
         self.playerInDoor = False
         self.needToChangeRoom = False
+        self.inwardDirection = None # 0: top, 1: right, 2: down, 3: left
+        if self.pos[1] == 0: # BUG this is too messy... idk what im doing
+            self.inwardDirection = 1
+        elif self.pos[0] == 0:
+            self.inwardDirection = 2
 
     def render(self, screen):
         screen.blit(self.doorImg, camera.projectPoint(self.rect.topleft))

@@ -29,8 +29,9 @@ class Entity:
 
 
 class Player(Entity):
-    def __init__(self) -> None:
+    def __init__(self, pos) -> None:
         super().__init__()
+        self.pos = [pos[0]*Tile.tileSize, pos[1]*Tile.tileSize]
         self.lives = 3
         self.speed = 300
         self.lastDirectionFaced = "front"

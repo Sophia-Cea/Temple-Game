@@ -26,7 +26,7 @@ class World:
 
     def update(self):
         self.getCurrentChunk().update()
-        Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundMap, player)
+        Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
 
     def handleInput(self, events):
         self.getCurrentChunk().handleInput(events)
@@ -122,20 +122,14 @@ class Chunk:
             for door in room.doors:
                 if door.id == self.nextDoorId:
                     player.pos = [door.pos[1]*Tile.tileSize, door.pos[0]*Tile.tileSize]
-                    if door.isVertical: #BUG from here down is all fucked up.
-                        if door.pos[1] == 0: # this one is ok
-                            player.pos[0] += 40
-                            print("moving you 40 to the right")
-                        elif door.pos[1] == len(room.backgroundMap[0])-2:
-                            player.pos[0] -= 40
-                            print("moving you 40 to the left")
-                    else:
-                        if door.pos[0] == 0: # this one is ok
-                            player.pos[1] += 40
-                            print("moving you 40 down")
-                        elif door.pos[1] == len(room.backgroundMap)-2:
-                            player.pos[1] -= 40
-                            print("moving you 40 up")
+                    if door.inwardDirection == Door.directions["up"]:
+                        player.pos[1] -= player.rect.height
+                    elif door.inwardDirection == Door.directions["down"]:
+                        player.pos[1] += player.rect.height
+                    elif door.inwardDirection == Door.directions["left"]:
+                        player.pos[0] -= player.rect.width
+                    elif door.inwardDirection == Door.directions["right"]:
+                        player.pos[0] += player.rect.width
                     break
         self.nextDoorId = None
 
@@ -203,6 +197,12 @@ class Room:
             enemy.handleInput(events)
 
 class Door:
+    directions = {
+        "up" : 0,
+        "right" : 1,
+        "down" : 2,
+        "left" : 3
+    }
     def __init__(self, doorDict) -> None:
         self.pos = doorDict["pos"]
         self.id = doorDict["id"]
@@ -216,11 +216,7 @@ class Door:
         self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
         self.playerInDoor = False
         self.needToChangeRoom = False
-        self.inwardDirection = None # 0: top, 1: right, 2: down, 3: left
-        if self.pos[1] == 0: # BUG this is too messy... idk what im doing
-            self.inwardDirection = 1
-        elif self.pos[0] == 0:
-            self.inwardDirection = 2
+        self.inwardDirection = doorDict["inwardDirection"] # 0: top, 1: right, 2: down, 3: left
 
     def render(self, screen):
         screen.blit(self.doorImg, camera.projectPoint(self.rect.topleft))

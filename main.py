@@ -5,15 +5,12 @@ from state import *
 # TODO next:
 # make enemies take damage from ww
 
-
-# ask andrew:
 # how should the player be able to control where they shoot?
+#   arrow keys
 # should the player be free to move all over the screen (including diagonals) or only up/down left/right?
 #   yes, all over the screen
-# how should the camera move? just follow the player anywhere they go or be more 
-# steady and stop at the edges and stuff? (ask sophia for detailed description of this)
-# can i make Player, world, and camera static?
 # how does player heal?
+#   eats the bodies of its enemies.
 
 '''
     TODO
@@ -38,6 +35,8 @@ from state import *
         - keys
             - maybe keys actually just exist in the top corner
         - pieces of a broken jewel
+        - money?
+        - food/enemy drops
     - main menu √
         - add buttons and text
     - pause menu √

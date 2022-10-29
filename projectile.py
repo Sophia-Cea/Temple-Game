@@ -84,16 +84,15 @@ class Bullet(Projectile):
     
     @staticmethod
     def checkAllBulletsCollision(barrierMap, player):
-        for row in barrierMap:
-            for tile in row:
-                if tile != 0:
-                    for bullet in Bullet.bullets:
-                        if bullet.checkState("moving"):
-                            if player.rect.colliderect(pygame.Rect(bullet.pos[0] - Bullet.bulletSize/2, bullet.pos[1] - Bullet.bulletSize/2, Bullet.bulletSize, Bullet.bulletSize)):
-                                bullet.explode()
-                                player.takeDamage(1)
-                            elif tile.rect.colliderect(pygame.Rect(bullet.pos[0] - Bullet.bulletSize/2, bullet.pos[1] - Bullet.bulletSize/2, Bullet.bulletSize, Bullet.bulletSize)):
-                                bullet.explode()
+        for tile in barrierMap:
+            if tile != 0:
+                for bullet in Bullet.bullets:
+                    if bullet.checkState("moving"):
+                        if player.rect.colliderect(pygame.Rect(bullet.pos[0] - Bullet.bulletSize/2, bullet.pos[1] - Bullet.bulletSize/2, Bullet.bulletSize, Bullet.bulletSize)):
+                            bullet.explode()
+                            player.takeDamage(1)
+                        elif tile.rect.colliderect(pygame.Rect(bullet.pos[0] - Bullet.bulletSize/2, bullet.pos[1] - Bullet.bulletSize/2, Bullet.bulletSize, Bullet.bulletSize)):
+                            bullet.explode()
 
     def checkExplosionDone(self): # TODO: make this shit work
         for particle in self.particles:

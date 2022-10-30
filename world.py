@@ -1,4 +1,5 @@
 # from utils import *
+import chunk
 import json
 from entity import *
 
@@ -6,30 +7,7 @@ from entity import *
 file = "newMap.json"
 player = Player((3,2))
 
-class World:
-    def __init__(self) -> None:
-        with open(file) as f:
-            self.world = json.load(f)
-        self.chunks = []
-        for key in self.world:
-            self.chunks.append(Chunk(self.world[key]))
-        self.currentChunk = 0
-        self.heartImg = pygame.transform.scale(pygame.image.load("assets/other/heart.png"), (30,30))
-    
-    def getCurrentChunk(self):
-        return self.chunks[self.currentChunk]
-    
-    def render(self, screen):
-        self.getCurrentChunk().render(screen)
-        for i in range(player.health):
-            screen.blit(self.heartImg, (35+i*40, 30))
 
-    def update(self):
-        self.getCurrentChunk().update()
-        Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
-
-    def handleInput(self, events):
-        self.getCurrentChunk().handleInput(events)
 
 class ChunkOld:
     def __init__(self, chunkDict) -> None:
@@ -79,59 +57,38 @@ class ChunkOld:
         for enemy in self.enemies:
             enemy.handleInput(events)
     
-class Chunk:
-    def __init__(self, chunkDict) -> None:
-        self.chunkDict = chunkDict
-        self.currentRoom = 0
-        self.nextDoorId = 0
-        self.rooms = []
-        self.doorConnections = chunkDict["doorConnections"]
-        for room in chunkDict["rooms"]:
-            self.rooms.append(Room(room))
-    
-    def render(self, screen):
-        self.getCurrentRoom().render(screen)
-    
-    def getCurrentRoom(self):
-        return self.rooms[self.currentRoom]
+class Door:
+    directions = {
+        "up" : 0,
+        "right" : 1,
+        "down" : 2,
+        "left" : 3
+    }
+    def __init__(self, doorDict) -> None:
+        self.pos = doorDict["pos"]
+        self.id = doorDict["id"]
+        self.isVertical = doorDict["vertical"] # BUG could be bug here if it doesnt convert true to True....
+        self.rect = pygame.Rect(self.pos[1] * Tile.tileSize, self.pos[0] * Tile.tileSize, Tile.tileSize, Tile.tileSize)
+        if self.isVertical:
+            self.rect.height = Tile.tileSize*2
+        else:
+            self.rect.width = Tile.tileSize*2
+        self.doorImg = pygame.Surface(self.rect.size)
+        self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
+        self.playerInDoor = False
+        self.needToChangeRoom = False
+        self.inwardDirection = doorDict["inwardDirection"] # 0: top, 1: right, 2: down, 3: left
 
+    def render(self, screen: pygame.Surface):
+        screen.blit(self.doorImg, camera.projectPoint(self.rect.topleft))
+    
     def update(self):
-        self.getCurrentRoom().update()
-        if self.getCurrentRoom().needToChangeRoom:
-            self.changeRooms()
-
-    def handleInput(self, events):
-        self.getCurrentRoom().handleInput(events)
-
-    def changeRooms(self): # BUG maybe move this to room..? dont think so
-        for i in range(len(self.doorConnections)):
-            if self.getCurrentRoom().currentDoorId in self.doorConnections[i]:
-                if self.doorConnections[i][0] == self.getCurrentRoom().currentDoorId:
-                    self.nextDoorId = self.doorConnections[i][1]
-                else:
-                    self.nextDoorId = self.doorConnections[i][0]
-                break
-        for room in enumerate(self.rooms):
-            for door in room[1].doors:
-                if door.id == self.nextDoorId:
-                    self.currentRoom = room[0]
-                    room[1].needToChangeRoom = False
-                    break
-
-        for room in self.rooms:
-            for door in room.doors:
-                if door.id == self.nextDoorId:
-                    player.pos = [door.pos[1]*Tile.tileSize, door.pos[0]*Tile.tileSize]
-                    if door.inwardDirection == Door.directions["up"]:
-                        player.pos[1] -= player.rect.height
-                    elif door.inwardDirection == Door.directions["down"]:
-                        player.pos[1] += player.rect.height
-                    elif door.inwardDirection == Door.directions["left"]:
-                        player.pos[0] -= player.rect.width
-                    elif door.inwardDirection == Door.directions["right"]:
-                        player.pos[0] += player.rect.width
-                    break
-        self.nextDoorId = None
+        if self.isVertical:
+            if player.rect.centerx in range(self.rect.centerx-10, self.rect.centerx+10):
+                self.needToChangeRoom = True
+        else:
+            if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
+                self.needToChangeRoom = True
 
 
 class Room:
@@ -196,35 +153,82 @@ class Room:
         for enemy in self.enemies:
             enemy.handleInput(events)
 
-class Door:
-    directions = {
-        "up" : 0,
-        "right" : 1,
-        "down" : 2,
-        "left" : 3
-    }
-    def __init__(self, doorDict) -> None:
-        self.pos = doorDict["pos"]
-        self.id = doorDict["id"]
-        self.isVertical = doorDict["vertical"] # BUG could be bug here if it doesnt convert true to True....
-        self.rect = pygame.Rect(self.pos[1] * Tile.tileSize, self.pos[0] * Tile.tileSize, Tile.tileSize, Tile.tileSize)
-        if self.isVertical:
-            self.rect.height = Tile.tileSize*2
-        else:
-            self.rect.width = Tile.tileSize*2
-        self.doorImg = pygame.Surface(self.rect.size)
-        self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
-        self.playerInDoor = False
-        self.needToChangeRoom = False
-        self.inwardDirection = doorDict["inwardDirection"] # 0: top, 1: right, 2: down, 3: left
 
-    def render(self, screen):
-        screen.blit(self.doorImg, camera.projectPoint(self.rect.topleft))
+
+class Chunk:
+    def __init__(self, chunkDict) -> None:
+        self.chunkDict = chunkDict
+        self.currentRoom = 0
+        self.nextDoorId = 0
+        self.rooms = []
+        self.doorConnections = chunkDict["doorConnections"]
+        for room in chunkDict["rooms"]:
+            self.rooms.append(Room(room))
     
+    def render(self, screen):
+        self.getCurrentRoom().render(screen)
+    
+    def getCurrentRoom(self) -> Room:
+        return self.rooms[self.currentRoom]
+
     def update(self):
-        if self.isVertical:
-            if player.rect.centerx in range(self.rect.centerx-10, self.rect.centerx+10):
-                self.needToChangeRoom = True
-        else:
-            if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
-                self.needToChangeRoom = True
+        self.getCurrentRoom().update()
+        if self.getCurrentRoom().needToChangeRoom:
+            self.changeRooms()
+
+    def handleInput(self, events):
+        self.getCurrentRoom().handleInput(events)
+
+    def changeRooms(self): # BUG maybe move this to room..? dont think so
+        for i in range(len(self.doorConnections)):
+            if self.getCurrentRoom().currentDoorId in self.doorConnections[i]:
+                if self.doorConnections[i][0] == self.getCurrentRoom().currentDoorId:
+                    self.nextDoorId = self.doorConnections[i][1]
+                else:
+                    self.nextDoorId = self.doorConnections[i][0]
+                break
+        for room in enumerate(self.rooms):
+            for door in room[1].doors:
+                if door.id == self.nextDoorId:
+                    self.currentRoom = room[0]
+                    room[1].needToChangeRoom = False
+                    break
+
+        for room in self.rooms:
+            for door in room.doors:
+                if door.id == self.nextDoorId:
+                    player.pos = [door.pos[1]*Tile.tileSize, door.pos[0]*Tile.tileSize]
+                    if door.inwardDirection == Door.directions["up"]:
+                        player.pos[1] -= player.rect.height
+                    elif door.inwardDirection == Door.directions["down"]:
+                        player.pos[1] += player.rect.height
+                    elif door.inwardDirection == Door.directions["left"]:
+                        player.pos[0] -= player.rect.width
+                    elif door.inwardDirection == Door.directions["right"]:
+                        player.pos[0] += player.rect.width
+                    break
+        self.nextDoorId = None
+class World:
+    def __init__(self) -> None:
+        with open(file) as f:
+            self.world = json.load(f)
+        self.chunks = []
+        for key in self.world:
+            self.chunks.append(Chunk(self.world[key]))
+        self.currentChunk = 0
+        self.heartImg = pygame.transform.scale(pygame.image.load("assets/other/heart.png"), (30,30))
+    
+    def getCurrentChunk(self) -> Chunk:
+        return self.chunks[self.currentChunk]
+    
+    def render(self, screen):
+        self.getCurrentChunk().render(screen)
+        for i in range(player.health):
+            screen.blit(self.heartImg, (35+i*40, 30))
+
+    def update(self):
+        self.getCurrentChunk().update()
+        Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
+
+    def handleInput(self, events):
+        self.getCurrentChunk().handleInput(events)

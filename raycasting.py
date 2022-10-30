@@ -2,74 +2,80 @@ import math
 from re import S
 import pygame
 from pygame import Vector2
+from tile import Tile
 import utils
+from world import World
 
 
-class Wall:
-    def __init__(self, p1, p2) -> None:
-        self.p1 = p1
-        self.p2 = p2
-
-    def draw(self, screen, camera: utils.Camera):
-        pygame.draw.line(screen, (245, 225, 245), camera.projectPoint(self.p1), camera.projectPoint(self.p2), 2)
-
-class Ray:
-    color = (255, 0, 0)
-    color2 = (10,25,11)
+class GridRay:
+    color2 = (20,80,1)
     def __init__(self, pos: Vector2, dir: Vector2) -> None:
         self.pos = pos
-        self.dir = dir.normalize()
-        self.radius = 5000
-    
-    def look_at(self, point: Vector2):
-        self.dir = (point - self.pos).normalize()
+        self.dir = dir
+        self.intersect = Vector2(0,0)
 
-    def cast(self, wall_pt_1: tuple, wall_pt_2: tuple) -> Vector2 | None:
-        x1 = wall_pt_1[0]
-        x2 = wall_pt_2[0]
-        y1 = wall_pt_1[1]
-        y2 = wall_pt_2[1]
+    def update(self, world: list[list[Tile]]):
+        # protect from division by 0
+        if self.dir.x == 0:
+            self.dir.x = 0.000001
+        if self.dir.y == 0:
+            self.dir.y = 0.000001
+        self.dir.normalize_ip() # ensures dir is normalized
+        dy_dx = self.dir.y / self.dir.x
+        dx_dy = self.dir.x / self.dir.y
 
-        x3 = self.pos.x
-        y3 = self.pos.y
-        x4 = self.pos.x + self.dir.x
-        y4 = self.pos.y + self.dir.y
+        step_x = math.sqrt(1 + (dy_dx**2))
+        step_y = math.sqrt(1 + (dx_dy**2))
 
-        den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 -x4)
-        if den == 0: 
-            return None
-        
-        t = ((x1-x3) * (y3-y4) - (y1-y3) * (x3-x4)) / den
-        u = -((x1-x2) * (y1-y3) - (y1-y2)*(x1-x3)) / den
+        unit_step = Vector2(step_x, step_y)
 
-        if t > 0 and t < 1 and u > 0:
-            return Vector2(x1 + t *(x2-x1), (y1 + t * (y2 - y1)))
+        map_pos = Vector2(int(self.pos.x), int(self.pos.y)) 
+        ray_length = Vector2(0,0)
+
+        step = Vector2(0,0)
+
+        if self.dir.x < 0:
+            step.x = -1
+            ray_length.x = (self.pos.x - map_pos.x) * unit_step.x
         else:
-            return None
+            step.x = 1
+            ray_length.x = (map_pos.x + 1 - self.pos.x) * unit_step.x
+    
+        if self.dir.y < 0:
+            step.y = -1
+            ray_length.y = (self.pos.y - map_pos.y) * unit_step.y
+        else:
+            step.y = 1
+            ray_length.y = (map_pos.y + 1 - self.pos.y) * unit_step.y
 
-    def update(self, world: list[Wall]):
-        closest_dist = 100000000
-        for wall in world:
-            end_pt = self.cast(wall.p1, wall.p2)
-            if end_pt is None:
-                continue
-            d = self.pos.distance_to(end_pt)
-            if d < closest_dist:
-                closest_end_pt = end_pt
-                closest_dist = d
-        self.radius = closest_dist
+        endTileFound = False
+        maxDistance = 100
+        currentDistance = 0
+        while (not endTileFound) and currentDistance < maxDistance:
+            if ray_length.x < ray_length.y:
+                map_pos.x += step.x
+                currentDistance = ray_length.x
+                ray_length.x += unit_step.x
+            else:
+                map_pos.y += step.y
+                currentDistance = ray_length.y
+                ray_length.y += unit_step.y
+
+            # in bounds
+            if map_pos.x >= 0 and map_pos.y >= 0 and map_pos.x < len(world[0]) and map_pos.y < len(world):
+                if world[int(map_pos.y)][int(map_pos.x)] != 0:
+                    endTileFound = True
+
+
+        self.intersect = self.pos + self.dir * currentDistance
         
-    def get_pt_at_radius(self, r):
-        if self.radius < r:
-            r = self.radius
-        return Vector2(self.pos + (r * self.dir))
-        
-    def draw(self, screen, camera: utils.Camera):
-        p1 = camera.projectVector(self.pos)
-        p2 = camera.projectVector(self.pos + (self.radius * self.dir))
-        # (426, 230) to (510, 230)
-        # assert camera.projectVector(self.p2) == camera.projectVector(Vector2(10, -120))
-        pygame.draw.line(screen, Ray.color, p1, p2)
+    def draw(self, screen):
+        pygame.draw.line(screen, (255,230,255), camera.projectVector(self.pos * Tile.tileSize), camera.projectVector(self.intersect * Tile.tileSize))
+
+    def get_pt_at_radius(self, radius):
+        if radius > self.pos.distance_to(self.intersect):
+            return self.intersect
+        return self.pos + (self.dir * radius)
 
 def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
     vertices: list[Vector2] = []
@@ -78,12 +84,12 @@ def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
     max_y = -1000000
     min_y = 1000000
     for ray in rays:
-        pt = ray.get_pt_at_radius(radius)
+        pt = ray.get_pt_at_radius(radius) * Tile.tileSize
         max_x = max(pt.x, max_x)
         max_y = max(pt.y, max_y)
         min_x = min(pt.x, min_x)
         min_y = min(pt.y, min_y)
-        vertices.append(ray.get_pt_at_radius(radius))
+        vertices.append(pt)
     
     polygon_width = abs(max_x - min_x)
     polygon_height = abs(max_y - min_y)
@@ -93,40 +99,31 @@ def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
         vertice.y -= min_y
 
     temp_surf = pygame.Surface((int(polygon_width), int(polygon_height)))
-    bounding_rect = pygame.draw.polygon(temp_surf, Ray.color2, vertices)
+    bounding_rect = pygame.draw.polygon(temp_surf, GridRay.color2, vertices)
     screen.blit(temp_surf, camera.projectPoint((min_x, min_y)), special_flags=pygame.BLEND_RGB_ADD)
 
-def update_rays_pos(update_mouse: bool):
-    mouse_pos = pygame.mouse.get_pos()
-    rays_pos = camera.unprojectPoint(mouse_pos)
-    for ray in rays:
-        if update_mouse:
-            ray.pos.x = rays_pos[0]
-            ray.pos.y = rays_pos[1]
-        ray.update(walls)  
 
 if __name__ == "__main__":
+    from utils import camera
     pygame.init()
     screen = pygame.display.set_mode((utils.WIDTH, utils.HEIGHT))
     clock = pygame.time.Clock()
-    camera = utils.Camera()
 
-    rays: list[Ray] = []
-    num_rays = 1000
+    world = World()
+
+    rays_pos = Vector2(5,4)
+    rays: list[GridRay] = []
+    num_rays = 60
     spacing = 360 / (num_rays-1)
-    ray_pos = camera.unprojectPoint((426, 230))
+    
 
     for i in range(num_rays):
         angle_rad = utils.deg2rad(i*spacing)
         direction = Vector2(math.cos(angle_rad), math.sin(angle_rad))
-        rays.append(Ray(Vector2(ray_pos), direction))
-    walls = [
-    Wall((10,10), (10,-500)),
-     Wall((10,10), (500, 10)),
-     Wall((200, 10),(500, -300)),
-     Wall((250, 30),(500, 300)),
-     Wall((300, 10),(400, 500)),
-    ]
+        rays.append(GridRay(rays_pos, direction))
+    
+
+    # ray = GridRay(Vector2(5,5), Vector2(1,0))
 
     ticks = 0
     running_time = 0
@@ -143,30 +140,51 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 pygame.quit()
     
+        ray_spd = 2
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            camera.yOffest -= 50 * delta
+            rays_pos.y -= ray_spd * delta
         if keys[pygame.K_a]:
-            camera.xOffset -= 50 * delta
+            rays_pos.x -= ray_spd * delta
         if keys[pygame.K_s]:
-            camera.yOffest += 50 * delta
+            rays_pos.y += ray_spd * delta
         if keys[pygame.K_d]:
-            camera.xOffset += 50 * delta
+            rays_pos.x += ray_spd * delta
         if keys[pygame.K_RETURN]:
             print(pygame.mouse.get_pos())
-               
-        update_rays_pos(True)
+
+        # mouse_pos = pygame.mouse.get_pos()
+        # mouse_tile_pos = Vector2(camera.unprojectPoint(mouse_pos)) / Tile.tileSize
+
+        world.update()
+        
+        tiles = world.getCurrentChunk().getCurrentRoom().foregroundMap
+        for ray in rays:
+            ray.pos = rays_pos
+            ray.update(tiles)
+    
+
+        # i hate this btw, just make a getForegroundTiles() function in World. Also,
+        # what is the difference between foregroundMap and foregroundTiles?
+        # ray.dir = Vector2(mouse_tile_pos - ray.pos)
+
+        camera.lerp_to(rays[0].pos.x * Tile.tileSize, rays[0].pos.y * Tile.tileSize, 0.3)
+
     
         screen.fill((0,0,0))
-        draw_lighting(screen, camera, 200)
+        world.render(screen)
+        # pygame.draw.circle(screen, (255,120,0), screen_ray_start_pos, 10)
+        # pygame.draw.line(screen, (230,230,230), screen_ray_start_pos, screen_ray_end_pos, 3)
         # draw_lighting(screen, camera, 200)
-        draw_lighting(screen, camera, 500)
-        draw_lighting(screen, camera, 1000)
+        # # draw_lighting(screen, camera, 200)
+        # draw_lighting(screen, camera, 500)
+        # draw_lighting(screen, camera, 1000)
         
-        # for ray in rays:
-        #     ray.draw(screen, camera)
-        for wall in walls:
-            wall.draw(screen, camera)
+        for ray in rays:
+            ray.draw(screen)
+        draw_lighting(screen, camera, 2)
+        # for wall in walls:
+        #     wall.draw(screen, camera)
 
 
         pygame.display.flip()

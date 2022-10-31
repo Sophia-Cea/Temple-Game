@@ -1,14 +1,100 @@
 import math
 from re import S
+from numpy import poly
 import pygame
-from pygame import Vector2
+from pygame import Rect, Surface, Vector2
 from tile import Tile
 import utils
 from world import World
 
+class LightSource:
+    ambient_light = 0.2
+    color = (0.5, 0.4, 0.3) # orange-y red
+    _ambient_color = (255*ambient_light, 255*ambient_light, 255*ambient_light)
+    def __init__(self, pos: Vector2, num_rays: int, radii: list[float]) -> None:
+        self.pos = pos
+        self.num_rays = num_rays
+        self.rays: list[Ray] = []
+        self.radii = radii
+        self.radii.sort()
 
-class GridRay:
-    color2 = (20,80,1)
+        c = LightSource.color
+        strength = 255/len(radii)
+        self.color = (c[0] * strength, c[1]*strength, c[2]*strength)
+    
+        spacing = 360 / (num_rays-1)
+        for i in range(num_rays):
+            angle_rad = utils.deg2rad(i*spacing)
+            direction = Vector2(math.cos(angle_rad), math.sin(angle_rad))
+            self.rays.append(Ray(self.pos, direction))
+
+    def set_pos(self, pos: Vector2):
+        for ray in self.rays:
+            ray.pos = pos
+
+    def update(self, tile_map: list[list[Tile]]):
+        for ray in self.rays:
+            ray.update(tile_map)
+
+    def debug_draw(self, screen: pygame.Surface):
+        for ray in self.rays:
+            ray.draw(screen)
+
+    def draw(self, screen: pygame.Surface):
+        # draw full lighting onto temp surface with blend_add, then blit with blend_mult onto dest
+        polygons: list[tuple[list[Vector2], Rect]] = []
+        
+        for radius in self.radii:
+            polygons.append(self._get_lighting_polygon(radius))
+
+        biggest = polygons[-1][1]
+        top_left = biggest.topleft
+
+        temp_surf = pygame.Surface(biggest.size) # last polygon is the biggest, and thus the polygon we want to make the surface surround
+        temp_surf.set_colorkey((0,0,0))
+        for polygon in polygons:
+            self._translate_polygon(polygon[0], top_left)
+            self._draw_polygon(polygon[0], temp_surf)
+        
+        t = pygame.Surface((utils.WIDTH, utils.HEIGHT))
+        t.fill(LightSource._ambient_color)
+        t.blit(temp_surf, camera.project(biggest))
+        screen.blit(t, (0,0), special_flags=pygame.BLEND_MULT)
+
+    def _translate_polygon(self, polygon: list[Vector2], top_left: tuple[int, int]):
+        for vertice in polygon:
+            vertice.x -= top_left[0]
+            vertice.y -= top_left[1]
+
+    def _draw_polygon(self, polygon: list[Vector2], surface: pygame.Surface):
+        temp_surf = Surface(surface.get_size())
+        pygame.draw.polygon(temp_surf, self.color, polygon)
+        surface.blit(temp_surf, (0,0), special_flags=pygame.BLEND_ADD)
+
+    def _get_lighting_polygon(self, radius):
+        vertices: list[Vector2] = []
+        max_x = -1000000
+        min_x = 10000000
+        max_y = -1000000
+        min_y = 1000000
+        # collect polygon vertices (scale to pixels) (world position)
+        for ray in self.rays:
+            pt = ray.get_pt_at_radius(radius) * Tile.tileSize
+            max_x = max(pt.x, max_x)
+            max_y = max(pt.y, max_y)
+            min_x = min(pt.x, min_x)
+            min_y = min(pt.y, min_y)
+            vertices.append(pt)
+            
+        # find bounds of polygon
+        polygon_width = abs(max_x - min_x)
+        polygon_height = abs(max_y - min_y)
+
+        return vertices, Rect(min_x, min_y, polygon_width, polygon_height)
+        
+
+class Ray:
+    color2 = (198,255,180)
     def __init__(self, pos: Vector2, dir: Vector2) -> None:
         self.pos = pos
         self.dir = dir
@@ -77,30 +163,6 @@ class GridRay:
             return self.intersect
         return self.pos + (self.dir * radius)
 
-def draw_lighting(screen:pygame.Surface, camera: utils.Camera, radius):
-    vertices: list[Vector2] = []
-    max_x = -1000000
-    min_x = 10000000
-    max_y = -1000000
-    min_y = 1000000
-    for ray in rays:
-        pt = ray.get_pt_at_radius(radius) * Tile.tileSize
-        max_x = max(pt.x, max_x)
-        max_y = max(pt.y, max_y)
-        min_x = min(pt.x, min_x)
-        min_y = min(pt.y, min_y)
-        vertices.append(pt)
-    
-    polygon_width = abs(max_x - min_x)
-    polygon_height = abs(max_y - min_y)
-
-    for vertice in vertices:
-        vertice.x -= min_x
-        vertice.y -= min_y
-
-    temp_surf = pygame.Surface((int(polygon_width), int(polygon_height)))
-    bounding_rect = pygame.draw.polygon(temp_surf, GridRay.color2, vertices)
-    screen.blit(temp_surf, camera.projectPoint((min_x, min_y)), special_flags=pygame.BLEND_RGB_ADD)
 
 
 if __name__ == "__main__":
@@ -111,19 +173,8 @@ if __name__ == "__main__":
 
     world = World()
 
-    rays_pos = Vector2(5,4)
-    rays: list[GridRay] = []
-    num_rays = 60
-    spacing = 360 / (num_rays-1)
-    
-
-    for i in range(num_rays):
-        angle_rad = utils.deg2rad(i*spacing)
-        direction = Vector2(math.cos(angle_rad), math.sin(angle_rad))
-        rays.append(GridRay(rays_pos, direction))
-    
-
-    # ray = GridRay(Vector2(5,5), Vector2(1,0))
+    l_pos = Vector2(4,5)
+    light_source = LightSource(l_pos, 120, [1.5,2.5,3.5,5])
 
     ticks = 0
     running_time = 0
@@ -143,48 +194,30 @@ if __name__ == "__main__":
         ray_spd = 2
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
-            rays_pos.y -= ray_spd * delta
+            l_pos.y -= ray_spd * delta
         if keys[pygame.K_a]:
-            rays_pos.x -= ray_spd * delta
+            l_pos.x -= ray_spd * delta
         if keys[pygame.K_s]:
-            rays_pos.y += ray_spd * delta
+            l_pos.y += ray_spd * delta
         if keys[pygame.K_d]:
-            rays_pos.x += ray_spd * delta
+            l_pos.x += ray_spd * delta
         if keys[pygame.K_RETURN]:
             print(pygame.mouse.get_pos())
 
-        # mouse_pos = pygame.mouse.get_pos()
-        # mouse_tile_pos = Vector2(camera.unprojectPoint(mouse_pos)) / Tile.tileSize
 
+        light_source.set_pos(l_pos)
         world.update()
         
         tiles = world.getCurrentChunk().getCurrentRoom().foregroundMap
-        for ray in rays:
-            ray.pos = rays_pos
-            ray.update(tiles)
+        light_source.update(tiles)
     
 
-        # i hate this btw, just make a getForegroundTiles() function in World. Also,
-        # what is the difference between foregroundMap and foregroundTiles?
-        # ray.dir = Vector2(mouse_tile_pos - ray.pos)
-
-        camera.lerp_to(rays[0].pos.x * Tile.tileSize, rays[0].pos.y * Tile.tileSize, 0.3)
-
+        camera.lerp_to(light_source.pos.x * Tile.tileSize, light_source.pos.y * Tile.tileSize, 0.3)
     
         screen.fill((0,0,0))
         world.render(screen)
-        # pygame.draw.circle(screen, (255,120,0), screen_ray_start_pos, 10)
-        # pygame.draw.line(screen, (230,230,230), screen_ray_start_pos, screen_ray_end_pos, 3)
-        # draw_lighting(screen, camera, 200)
-        # # draw_lighting(screen, camera, 200)
-        # draw_lighting(screen, camera, 500)
-        # draw_lighting(screen, camera, 1000)
         
-        for ray in rays:
-            ray.draw(screen)
-        draw_lighting(screen, camera, 2)
-        # for wall in walls:
-        #     wall.draw(screen, camera)
-
+        light_source.debug_draw(screen)
+        light_source.draw(screen)
 
         pygame.display.flip()

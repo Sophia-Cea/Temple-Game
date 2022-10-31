@@ -59,8 +59,8 @@ class Player(Entity):
 
     def render(self, screen):
         super().render(screen)
-        self.currentState.render(screen, camera.project(self.rect))
         # self.currentState.render(screen, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2))
+        self.currentState.render(screen, camera.project(self.rect))
 
     def update(self):
         super().update()
@@ -70,7 +70,6 @@ class Player(Entity):
     def takeDamage(self, amt):
         if self.getState() != "attacking":
             self.health -= amt
-        
 
     def handleInput(self, events, barrierMap): # BUG need to put in new parameter
         if self.getState() != "moving":

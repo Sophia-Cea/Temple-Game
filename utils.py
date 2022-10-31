@@ -51,6 +51,7 @@ class Camera:
         x_temp = pos.x - WIDTH/2
         y_temp = pos.y - HEIGHT/2
         return (x_temp + self.xOffset, y_temp + self.yOffest)
+    
 
 camera = Camera()       
 

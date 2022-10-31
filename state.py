@@ -1,5 +1,3 @@
-# from entity import *
-# from playerStates import * 
 from world import *
 
 world = World()

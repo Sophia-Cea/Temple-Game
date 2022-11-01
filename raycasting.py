@@ -47,25 +47,10 @@ class LightSource:
 
     def draw(self, screen: pygame.Surface):
         # draw full lighting onto temp surface with blend_add, then blit with blend_mult onto dest
-        
-        polygon, poly_rect = self._get_lighting_polygon()
-        
-        top_left = poly_rect.topleft
-        self._translate_polygon(polygon, top_left)
-        temp_surf = self._draw_polygon(polygon, poly_rect)
-
-        t = pygame.Surface((utils.WIDTH, utils.HEIGHT))
-        t.fill(LightSource._ambient_color)
-        t.blit(temp_surf, camera.project(poly_rect))
-        screen.blit(t, (0,0), special_flags=pygame.BLEND_MULT)
-        # screen.blit(temp_surf, camera.project(poly_rect), special_flags=pygame.BLEND_MULT)
-        
-        # t = pygame.Surface((utils.WIDTH, utils.HEIGHT))
-        # t.set_colorkey((0,0,0))
-        # t.blit(temp_surf, camera.project(poly_rect))
-        # t.blit(self.surface, (0,0), special_flags=pygame.BLEND_MULT)
-        
-        # screen.blit(t, (0,0), special_flags=pygame.BLEND_MULT)
+        p, pr = light_source._get_lighting_polygon()
+        light_source._translate_polygon(p, pr.topleft)
+        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, self.pos)
+        screen.blit(mask_surf, camera.project(pr), pygame.BLEND_MULT)
 
     def _translate_polygon(self, polygon: list[Vector2], top_left: tuple[int, int]):
         for vertice in polygon:
@@ -73,8 +58,6 @@ class LightSource:
             vertice.y -= top_left[1]
 
     def _draw_polygon(self, polygon: list[Vector2], rect:Rect):
-        
-
         self.poly_surf, self.mask_surf = draw_polygon_with_image(polygon, rect, self.surface)
         return self.poly_surf
 
@@ -236,14 +219,18 @@ def init_default_light_surface():
     return init_light_surface(num_layers, draw_layer, before_draw)
 
 
-def draw_polygon_with_image(polygon: list[Vector2], poly_rect: Rect, image: Surface):
+def draw_polygon_with_image(polygon: list[Vector2], poly_rect: Rect, image: Surface, center: tuple):
     mask_surf = Surface(poly_rect.size)
     # expects polygon to be translated already
     pygame.draw.polygon(mask_surf, (255,255,255), polygon)
 
     surf = Surface(image.get_size())
-    surf.blit(image, (0,0))
+    r = image.get_rect()
+    r.center = center
+    
+    surf.blit(image, r)
     surf.blit(mask_surf, (0,0), special_flags=pygame.BLEND_RGB_MULT)
+    pygame.draw.rect(surf, (255,0,0), surf.get_rect(), 2)
     return surf, mask_surf
 
 if __name__ == "__main__":
@@ -254,21 +241,12 @@ if __name__ == "__main__":
 
     world = World()
 
-    l_pos = Vector2(4,5)
+    l_pos = Vector2(3.3,3.4)
     light_source = LightSource(l_pos, 120)
 
     ticks = 0
     running_time = 0
 
-    # temp = init_fancy_light_surface()
-    # temp2 = pygame.Surface(temp.get_size())
-    # r = temp.get_rect()
-    # pygame.draw.rect(temp2, (255,255,255), Rect(0, r.centery, r.width, 20))
-    # temp.blit(temp2, (0,0), special_flags=pygame.BLEND_MULT)
-    
-    # polygon = [(0,0), (400,400), (0,400)]
-    # poly_rect = Rect(0,0,400,400)
-    # mask_surf, poly_surf = draw_polygon_with_image(polygon, poly_rect, pygame.transform.scale(pygame.image.load("assets/tiles/tile_14.png"), (400,400)))
     temp_img =  pygame.transform.scale(pygame.image.load("assets/tiles/tile_14.png"), (400,400))
     while True:
         delta = clock.tick() / 1000
@@ -294,7 +272,7 @@ if __name__ == "__main__":
         if keys[pygame.K_d]:
             l_pos.x += ray_spd * delta
         if keys[pygame.K_RETURN]:
-            print(pygame.mouse.get_pos())
+            print(light_source.pos)
 
 
         light_source.set_pos(l_pos)
@@ -310,11 +288,11 @@ if __name__ == "__main__":
 
         # world.render(screen)
 
-        light_source.debug_draw(screen)
         p, pr = light_source._get_lighting_polygon()
         light_source._translate_polygon(p, pr.topleft)
-        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface)
+        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, light_source.pos*Tile.tileSize)
         # mask_surf = pygame.transform.scale(mask_surf, (utils.WIDTH, utils.HEIGHT))
+        light_source.debug_draw(screen)
         screen.blit(surf, camera.project(pr))
    
         pygame.display.flip()

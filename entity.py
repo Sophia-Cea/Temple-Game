@@ -33,7 +33,7 @@ class Player(Entity):
         super().__init__()
         self.pos = [pos[0]*Tile.tileSize, pos[1]*Tile.tileSize]
         self.lives = 3
-        self.speed = 300
+        self.speed = 500
         self.lastDirectionFaced = "front"
         self.rect = pygame.Rect(0, 0, 64, 120)
         self.health = 5 #lives

@@ -1,5 +1,4 @@
 # from utils import *
-import chunk
 import json
 from entity import *
 
@@ -103,7 +102,6 @@ class Room:
         for enemy in self.enemies:
             enemy.handleInput(events)
 
-
 class Chunk:
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -157,7 +155,20 @@ class Chunk:
                         player.pos[0] += player.rect.width
                     break
         self.nextDoorId = None
-        print("changed rooms")
+
+class Chunk1(Chunk):
+    def __init__(self, chunkDict) -> None:
+        super().__init__(chunkDict)
+
+    def changeRooms(self):
+        if self.currentRoom == 0:
+            if self.getCurrentRoom().currentDoorId == 1:
+                return 1
+            elif self.getCurrentRoom().currentDoorId == 2:
+                return 2
+        else:
+            super().changeRooms()
+
 
 class World:
     def __init__(self) -> None:
@@ -178,7 +189,20 @@ class World:
             screen.blit(self.heartImg, (35+i*40, 30))
 
     def update(self):
-        self.getCurrentChunk().update()
+        if self.currentChunk == 0:
+            self.getCurrentChunk().getCurrentRoom().update()
+            if self.getCurrentChunk().getCurrentRoom().needToChangeRoom:
+                if self.getCurrentChunk().getCurrentRoom().currentDoorId == 1:
+                    self.currentChunk = 1
+                    player.pos = [12*Tile.tileSize, 2*Tile.tileSize]
+                    print("moved to chunk 1!")
+                elif self.getCurrentChunk().getCurrentRoom().currentDoorId == 2:
+                    self.currentChunk = 2
+                    player.pos = [6*Tile.tileSize, 10*Tile.tileSize]
+                    self.getCurrentChunk().currentRoom = 6
+                    print("moved to chunk 2!")
+        else:
+            self.getCurrentChunk().update()
         Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
 
     def handleInput(self, events):

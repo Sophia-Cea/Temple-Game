@@ -129,7 +129,7 @@ class Chunk:
     def __init__(self, chunkDict) -> None:
         self.rooms = []
         self.chunkDict = chunkDict
-        for room in self.chunkDict:
+        for room in self.chunkDict["rooms"]:
             self.rooms.append(Room(room))
         self.currentRoom = 0
 
@@ -151,17 +151,18 @@ class Room:
     maxGridHeight = 70
     def __init__(self, roomDict) -> None:
         self.roomDict = roomDict
-        self.foreground = roomDict["foregroundBarriers"]
-        self.background = roomDict["backgroundMap"]
+        self.foreground = roomDict["foreground"]
+        self.background = roomDict["background"]
         self.enemies = roomDict["enemies"]
-        self.decorations = roomDict["decoration"]
+        self.decorations = roomDict["decor"]
+        self.maps = [self.foreground, self.background, self.enemies, self.decorations]
         self.currentMap = 0
         self.maps = []
 
         self.tileSize = None
         self.marginX = None
         self.marginY = None
-        self.gridSize = [len(self.getCurrentRoom().foreground[0]), len(self.getCurrentRoom().foreground)]
+        self.gridSize = [len(self.foreground[0]), len(self.foreground)]
         self.initializeGrid()
     
     def findTileSize(self):
@@ -182,7 +183,7 @@ class Room:
         for i in range(self.gridSize[1]):
             for j in range(self.gridSize[0]):
                 if self.maps[self.currentMap][i][j] != 0:
-                    screen.blit(pygame.transform.scale(Chunk.tiles[self.maps[self.currentMap][i][j]], (self.tileSize, self.tileSize)), (self.marginX+j*self.tileSize, self.marginY+i*self.tileSize))
+                    screen.blit(pygame.transform.scale(levelEditor.getCurrentTileList().tiles[self.maps[self.currentMap][i][j]], (self.tileSize, self.tileSize)), (self.marginX+j*self.tileSize, self.marginY+i*self.tileSize))
         for i in range(self.gridSize[0]+1):
             pygame.draw.line(screen, (255,255,255), (self.marginX + i*self.tileSize, self.marginY), (self.marginX + i*self.tileSize, HEIGHT-self.marginY), 1)
         for j in range(self.gridSize[1]+1):

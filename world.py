@@ -5,58 +5,9 @@ from entity import *
 
 # camera = Camera()
 file = "newMap.json"
-player = Player((3,2))
+player = Player((7.5,7))
 
 
-
-class ChunkOld:
-    def __init__(self, chunkDict) -> None:
-        self.chunkDict = chunkDict
-        self.backgroundMap = chunkDict["backgroundMap"]
-        self.foregroundMap = chunkDict["foregroundBarriers"]
-        self.enemyMap = chunkDict["enemies"]
-        self.decorativeItemsMap = chunkDict["decoration"]
-        self.backgroundTiles = []
-        self.foregroundTiles = []
-        self.decorations = []
-        self.enemies = []
-        for i in range(len(self.backgroundMap)):
-            for j in range(len(self.backgroundMap[i])):
-                self.backgroundMap[i][j] = BackgroundTile(j, i, self.backgroundMap[i][j])
-                if self.foregroundMap[i][j] != 0:
-                    self.foregroundMap[i][j] = ForegroundTile(j, i, self.foregroundMap[i][j])
-                if self.enemyMap[i][j] != 0:
-                    if self.enemyMap[i][j] == 1:
-                        self.enemies.append(FixedEnemy((i,j), randint(500,5000)))
-                if self.decorativeItemsMap[i][j] != 0:
-                    self.decorations.append(AnimatedTile(j, i, self.decorativeItemsMap[i][j]))
-
-    def render(self, screen):
-        # for i in range(len(self.backgroundMap)):
-        #     for j in range(len(self.backgroundMap[i])):
-        #         self.backgroundMap[i][j].drawTile(screen)
-        #         if self.foregroundMap[i][j] != 0:
-        #             self.foregroundMap[i][j].drawTile(screen)
-        for tile in Tile.tileList:
-            tile.drawTile(screen)
-        for enemy in self.enemies:
-            enemy.render(screen)
-        
-    def update(self):
-        for enemy in self.enemies:
-            enemy.update()
-            if enemy.readyToLaunch:
-                if measureDistance(enemy.pos, player.pos) <= 200:
-                    enemy.launchBullet(player.rect.center)
-        for tile in Tile.tileList:
-            if type(tile) == AnimatedTile:
-                tile.update()
-        # for tile in 
-
-    def handleInput(self, events):
-        for enemy in self.enemies:
-            enemy.handleInput(events)
-    
 class Door:
     directions = {
         "up" : 0,
@@ -71,10 +22,11 @@ class Door:
         self.rect = pygame.Rect(self.pos[1] * Tile.tileSize, self.pos[0] * Tile.tileSize, Tile.tileSize, Tile.tileSize)
         if self.isVertical:
             self.rect.height = Tile.tileSize*2
+            self.doorImg = pygame.transform.scale(pygame.image.load("assets/tiles/door_vertical.png"), (self.rect.size))
         else:
             self.rect.width = Tile.tileSize*2
-        self.doorImg = pygame.Surface(self.rect.size)
-        self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
+            self.doorImg = pygame.transform.scale(pygame.image.load("assets/tiles/door_horizontal.png"), (self.rect.size))
+        # self.doorImg.fill((255,0,255)) # TODO refactor this so it draws the door as 2 tiles or smth
         self.playerInDoor = False
         self.needToChangeRoom = False
         self.inwardDirection = doorDict["inwardDirection"] # 0: top, 1: right, 2: down, 3: left
@@ -83,14 +35,14 @@ class Door:
         screen.blit(self.doorImg, camera.projectPoint(self.rect.topleft))
     
     def update(self):
-        if self.isVertical:
-            if player.rect.centerx in range(self.rect.centerx-10, self.rect.centerx+10):
-                self.needToChangeRoom = True
-        else:
-            if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
-                self.needToChangeRoom = True
-
-
+        if player.rect.colliderect(self.rect):
+            if self.isVertical:
+                if player.rect.centerx in range(self.rect.centerx-10, self.rect.centerx+10):
+                    self.needToChangeRoom = True
+                    print("true")
+            else:
+                if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
+                    self.needToChangeRoom = True
 class Room:
     def __init__(self, roomDict) -> None:
         self.dict = roomDict
@@ -102,7 +54,6 @@ class Room:
         self.decorMap = roomDict["decor"]
         self.doors = roomDict["doors"]
         self.centerOfRoom = [] #TODO this will be used for the doors to determine where the inside of the room is
-
         self.backgroundTiles = []
         self.foregroundTiles = []
         self.enemies = []
@@ -139,7 +90,6 @@ class Room:
                 self.needToChangeRoom = True
                 door.needToChangeRoom = False
                 self.currentDoorId = door.id
-                # print("yeeeeeee")
         for decor in self.decorations:
             if type(decor) == AnimatedTile:
                 decor.update()
@@ -152,7 +102,6 @@ class Room:
     def handleInput(self, events):
         for enemy in self.enemies:
             enemy.handleInput(events)
-
 
 
 class Chunk:
@@ -208,6 +157,8 @@ class Chunk:
                         player.pos[0] += player.rect.width
                     break
         self.nextDoorId = None
+        print("changed rooms")
+
 class World:
     def __init__(self) -> None:
         with open(file) as f:

@@ -37,9 +37,14 @@ class BackgroundTile(Tile):
 
 class ForegroundTile(Tile):
     tiles = {
-        1: pygame.image.load("assets/tiles/tile_12.png"),
-        2: pygame.image.load("assets/tiles/tile_13.png"),
-        3: pygame.image.load("assets/tiles/tile_14.png")
+        1: pygame.image.load("assets/tiles/brick.png"),
+        2: pygame.image.load("assets/tiles/brick_top.png"),
+        3: pygame.image.load("assets/tiles/brick_left.png"),
+        4: pygame.image.load("assets/tiles/brick_right.png"),
+        5: pygame.image.load("assets/tiles/brick_u.png"),
+        6: pygame.image.load("assets/tiles/tile_12.png"),
+        7: pygame.image.load("assets/tiles/tile_13.png")
+
     }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)

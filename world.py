@@ -105,10 +105,12 @@ class Room:
 
     def getBounds(self) -> Rect:
         top_left = self.foregroundTiles[0].rect.topleft # in case top left isn't (0,0)
-        bottom = (len(self.foregroundMap) * Tile.tileSize) + Tile.tileSize
-        right = (len(self.foregroundMap[0]) * Tile.tileSize) + Tile.tileSize
+        top = 0
+        left = 0
+        bottom = (len(self.foregroundMap) * Tile.tileSize)
+        right = (len(self.foregroundMap[0]) * Tile.tileSize)
 
-        return Rect(top_left[0], top_left[1], right - top_left[0], bottom - top_left[1])
+        return Rect(0, 0, right, bottom)
 
 class Chunk:
     def __init__(self, chunkDict) -> None:

@@ -1,5 +1,6 @@
 # from utils import *
 import json
+from pygame import Rect
 from entity import *
 
 # camera = Camera()
@@ -47,14 +48,14 @@ class Room:
         self.dict = roomDict
         self.needToChangeRoom = False
         self.currentDoorId = 0
-        self.backgroundMap = roomDict["background"]
-        self.foregroundMap = roomDict["foreground"]
+        self.backgroundMap: list[list[int]] = roomDict["background"]
+        self.foregroundMap: list[list[int]] = roomDict["foreground"]
         self.enemyMap = roomDict["enemies"]
         self.decorMap = roomDict["decor"]
         self.doors = roomDict["doors"]
         self.centerOfRoom = [] #TODO this will be used for the doors to determine where the inside of the room is
-        self.backgroundTiles = []
-        self.foregroundTiles = []
+        self.backgroundTiles: list[Tile] = []
+        self.foregroundTiles: list[Tile] = []
         self.enemies = []
         self.decorations = []
         for i in range(len(self.doors)):
@@ -101,6 +102,13 @@ class Room:
     def handleInput(self, events):
         for enemy in self.enemies:
             enemy.handleInput(events)
+
+    def getBounds(self) -> Rect:
+        top_left = self.foregroundTiles[0].rect.topleft # in case top left isn't (0,0)
+        bottom = (len(self.foregroundMap) * Tile.tileSize) + Tile.tileSize
+        right = (len(self.foregroundMap[0]) * Tile.tileSize) + Tile.tileSize
+
+        return Rect(top_left[0], top_left[1], right - top_left[0], bottom - top_left[1])
 
 class Chunk:
     def __init__(self, chunkDict) -> None:
@@ -189,9 +197,15 @@ class World:
             screen.blit(self.heartImg, (35+i*40, 30))
 
     def update(self):
+        camera.set_bounds(self.getCurrentChunk().getCurrentRoom().getBounds())
+        camera.lerp_to(player.rect.centerx, player.rect.centery, 0.05)
         if self.currentChunk == 0:
             self.getCurrentChunk().getCurrentRoom().update()
             if self.getCurrentChunk().getCurrentRoom().needToChangeRoom:
+                # TODO make a door class that stores next intended position
+                # Gahd damn this is so sloppy
+                # You really want to have 4 lines and an if statement for every door in the game? that sounds like a mess
+                # Also, consider making a setCurrentRoom(chunk, room) function. In that function, you can put 
                 if self.getCurrentChunk().getCurrentRoom().currentDoorId == 1:
                     self.currentChunk = 1
                     player.pos = [12*Tile.tileSize, 2*Tile.tileSize]
@@ -201,13 +215,11 @@ class World:
                     player.pos = [6*Tile.tileSize, 10*Tile.tileSize]
                     self.getCurrentChunk().currentRoom = 6
                     print("moved to chunk 2!")
+
         else:
             self.getCurrentChunk().update()
         Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
-        leftEdge = camera.projectPoint((0,0))[0]
-        rightEdge = camera.projectPoint((Tile.tileSize*len(self.getCurrentChunk().getCurrentRoom().backgroundMap[0]),0))[0]
-        camera.lerp_to(player.rect.centerx, player.rect.centery, 0.05)
-
-
+        
+        
     def handleInput(self, events):
         self.getCurrentChunk().handleInput(events)

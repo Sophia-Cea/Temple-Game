@@ -107,7 +107,7 @@ class FixedEnemy(Entity):
     def render(self, screen):
         for bullet in self.bullets:
             bullet.render(screen)
-        r = self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2)
+        r = self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffset + HEIGHT/2)
         screen.blit(self.surface, (r.x, r.y))
         super().render(screen)
     

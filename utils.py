@@ -27,36 +27,54 @@ def delta():
 class Camera:
     def __init__(self):
         self.xOffset = WIDTH/2
-        self.yOffest = HEIGHT/2
+        self.yOffset = HEIGHT/2
+        self.rect = pygame.Rect(self.xOffset, self.yOffset, WIDTH, HEIGHT)
+        self.bounds = None
     
-    def lerp_to(self, x, y, percent):
-        self.xOffset += (x - self.xOffset) * percent
-        self.yOffest += (y - self.yOffest) * percent
+    def set_bounds(self, bounds: pygame.Rect):
+        self.bounds = bounds
+    
+    def set_pos(self, x, y):
+        if(self.bounds == None):
+            self.xOffset = x
+            self.yOffset = y
+            return
+        
+        x_min = self.bounds.x + self.rect.width/2
+        x_max = self.bounds.right - self.rect.width/2
+        y_min = self.bounds.y + self.rect.h/2
+        y_max = self.bounds.bottom - self.rect.h/2
 
-    def lerp_x(self, x, y, percent):
-        self.xOffset += (x - self.xOffset) * percent
-    
-    def lerp_y(self, x, y, percent):
-        self.yOffest += (y - self.yOffest) * percent
+        self.rect.centerx = clamp(x, x_min, x_max)
+        self.rect.centery = clamp(y, y_min, y_max)
+
+        self.xOffset = self.rect.centerx
+        self.yOffset = self.rect.centery
+        
+
+    def lerp_to(self, x, y, percent):
+        intended_x = self.xOffset + (x - self.xOffset) * percent
+        intended_y = self.yOffset + (y - self.yOffset) * percent
+        self.set_pos(intended_x, intended_y)
 
     def project(self, rect: pygame.Rect) -> pygame.Rect:
-        return pygame.Rect(rect.x - self.xOffset + WIDTH/2, rect.y - self.yOffest + HEIGHT/2, rect.w, rect.h)
+        return pygame.Rect(rect.x - self.xOffset + WIDTH/2, rect.y - self.yOffset + HEIGHT/2, rect.w, rect.h)
 
     def projectPoint(self, pos: tuple) -> tuple:
-        return (pos[0] - self.xOffset + WIDTH/2, pos[1] - self.yOffest + HEIGHT/2)
+        return (pos[0] - self.xOffset + WIDTH/2, pos[1] - self.yOffset + HEIGHT/2)
 
     def projectVector(self, pos: pygame.Vector2) -> tuple:
-        return (pos.x - self.xOffset + WIDTH/2, pos.y - self.yOffest + HEIGHT/2)
+        return (pos.x - self.xOffset + WIDTH/2, pos.y - self.yOffset + HEIGHT/2)
 
     def unprojectPoint(self, pos:tuple) -> tuple:
         x_temp = pos[0] - WIDTH/2
         y_temp = pos[1] - HEIGHT/2
-        return (x_temp + self.xOffset, y_temp + self.yOffest)
+        return (x_temp + self.xOffset, y_temp + self.yOffset)
 
     def unprojectVector(self, pos:pygame.Vector2) -> pygame.Vector2:
         x_temp = pos.x - WIDTH/2
         y_temp = pos.y - HEIGHT/2
-        return (x_temp + self.xOffset, y_temp + self.yOffest)
+        return (x_temp + self.xOffset, y_temp + self.yOffset)
     
 
 camera = Camera()       
@@ -85,11 +103,10 @@ def resource_path(relative_path):
   return os.path.join(os.path.abspath('.'), relative_path)
 
 def clampColor(val):
-    if val > 255:
-        val = 255
-    if val < 0:
-        val = 0
-    return int(val)
+    return clamp(val, 0, 255)
+
+def clamp(val, min_val, max_val):
+    return max(min(val, max_val), min_val)
 
 def convertRect(rectTuple):
     newRect = rectTuple
@@ -244,4 +261,3 @@ class Button:
         self.convertedRect = convertRect(surface, (self.rect.x, self.rect.y, self.rect.width, self.rect.height))
         self.resizedSurface = pygame.transform.scale(self.surface, (self.convertedRect.width, self.convertedRect.height))
         self.resizedHoverSurface = pygame.transform.scale(self.hoverSurface, (self.convertedRect.width, self.convertedRect.height))
-

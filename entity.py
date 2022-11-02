@@ -64,7 +64,7 @@ class Player(Entity):
 
     def update(self):
         super().update()
-        camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
+        # camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
         self.currentState.update()
     
     def takeDamage(self, amt):

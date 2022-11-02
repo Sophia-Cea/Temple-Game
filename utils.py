@@ -26,11 +26,17 @@ def delta():
 
 class Camera:
     def __init__(self):
-        self.xOffset = 0
-        self.yOffest = 0
+        self.xOffset = WIDTH/2
+        self.yOffest = HEIGHT/2
     
     def lerp_to(self, x, y, percent):
         self.xOffset += (x - self.xOffset) * percent
+        self.yOffest += (y - self.yOffest) * percent
+
+    def lerp_x(self, x, y, percent):
+        self.xOffset += (x - self.xOffset) * percent
+    
+    def lerp_y(self, x, y, percent):
         self.yOffest += (y - self.yOffest) * percent
 
     def project(self, rect: pygame.Rect) -> pygame.Rect:

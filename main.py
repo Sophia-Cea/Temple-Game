@@ -4,8 +4,8 @@ from state import *
 
 # TODO next:
 # make camera stop at the edges of walls
-# make level editor usable again
-# design a decent map to use for now
+# make a level editor that just takes in an array and outputs the colored background array
+# design a decent map to use for now √
 
 # how should the player be able to control where they shoot?
 #   arrow keys

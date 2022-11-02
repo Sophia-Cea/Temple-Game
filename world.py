@@ -204,6 +204,13 @@ class World:
         else:
             self.getCurrentChunk().update()
         Bullet.checkAllBulletsCollision(self.getCurrentChunk().getCurrentRoom().foregroundTiles, player)
+        leftEdge = camera.projectPoint((0,0))[0]
+        rightEdge = camera.projectPoint((Tile.tileSize*len(self.getCurrentChunk().getCurrentRoom().backgroundMap[0]),0))[0]
+        print("left edge: " + str(leftEdge) + " right edge: " + str(rightEdge))
+        if (leftEdge >= 0 and rightEdge >= WIDTH) or (leftEdge <= 0 and rightEdge <= WIDTH): #BUG need to figure out the logic for this
+            camera.lerp_x(player.rect.centerx, player.rect.centery, 0.05)
+        camera.lerp_y(player.rect.centerx, player.rect.centery, 0.05)
+
 
     def handleInput(self, events):
         self.getCurrentChunk().handleInput(events)

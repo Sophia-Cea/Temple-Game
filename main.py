@@ -54,6 +54,7 @@ from state import *
 pygame.init()
 screen = pygame.display.set_mode([WIDTH, HEIGHT], pygame.RESIZABLE)
 display = pygame.Surface((WIDTH, HEIGHT))
+pygame.display.set_icon(pygame.transform.scale(pygame.image.load("assets/other/icon.png"), (64,64)))
 
 stateManager.push(PlayState())
 

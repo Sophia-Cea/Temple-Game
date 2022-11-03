@@ -16,6 +16,14 @@ foregroundList: list = [
     [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1]
 ]
 
+backgroundList: list = []
+
+for i in range(len(foregroundList)):
+    ye = []
+    for j in range(len(foregroundList[0])):
+        ye.append(foregroundList[i][j])
+    backgroundList.append(ye)
+
 file = "levelEditorFile.json"
 screen = pygame.display.set_mode([1000, 700], pygame.RESIZABLE)
 animatedTiles = {}
@@ -100,7 +108,7 @@ class Room:
     maxGridHeight = 70
     def __init__(self) -> None:
         self.foreground = foregroundList.copy()
-        self.background = foregroundList.copy()
+        self.background = backgroundList.copy()
         self.enemies = self.convertMapToZeroes()
         self.decorations = self.convertMapToZeroes()
         self.gridSize = [len(self.foreground[0]), len(self.foreground)]

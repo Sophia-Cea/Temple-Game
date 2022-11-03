@@ -139,19 +139,19 @@ class Fonts:
     WIDTH = WIDTH
     HEIGHT = HEIGHT
     fonts = {
-        "title": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/14), bold=False, italic=False),
+        "title": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/17), bold=False, italic=False),
         "subtitle": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/20), bold=False, italic=False),
         "paragraph": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/26), bold=False, italic=False),
-        "button": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/28), bold=False, italic=False)
+        "button": pygame.font.Font(resource_path("font.ttf"), int(WIDTH/40), bold=False, italic=False)
     }
 
     def resizeFonts(screen):
         Fonts.WIDTH = screen.get_width()
         Fonts.fonts = {
-            "title": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/14), bold=False, italic=False),
+            "title": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/17), bold=False, italic=False),
             "subtitle": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/20), bold=False, italic=False),
             "paragraph": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/26), bold=False, italic=False),
-            "button": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/28), bold=False, italic=False)
+            "button": pygame.font.Font(resource_path("font.ttf"), int(Fonts.WIDTH/40), bold=False, italic=False)
         }
 
 class Text:

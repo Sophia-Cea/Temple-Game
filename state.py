@@ -1,3 +1,4 @@
+from attr import s
 from world import *
 
 world = World()
@@ -76,11 +77,17 @@ class PlayState(State):
 class MenuState(State):
     def __init__(self) -> None:
         super().__init__()
-        self.texts = []
-        self.buttons = []
+        self.texts = [Text("Curse of Pupper", "title", (255,250,235), (50,10), True)]
+        self.buttons = [Button("New Game", pygame.Rect(35,50, 30,12), 35, [255,255,255], [220,170,200], [120,0,50])]
+        self.bg = pygame.transform.scale(pygame.image.load("assets/other/menu_bg.png"), (WIDTH,HEIGHT))
     
     def render(self, screen):
-        screen.fill((50, 0, 100))
+        # screen.fill((50, 0, 100))
+        screen.blit(self.bg, (0,0))
+        for text in self.texts: 
+            text.draw(screen)
+        for button in self.buttons:
+            button.draw(screen)
 
     
     def update(self):
@@ -88,15 +95,49 @@ class MenuState(State):
     
     def handleInput(self, events):
         super().handleInput(events)
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                for i in range(len(self.buttons)):
+                    if self.buttons[i].checkMouseOver(pos):
+                        if i == 0:
+                            stateManager.push(PlayState())
+                            # stateManager.push(DialogueState(["yee", "yeeeee", "meep"]))
 
 
 class GameOverState(State):
     def __init__(self) -> None:
         super().__init__()
+        self.fadingIn = False
+        self.fadingOut = True
+        self.opacity = 0
+        self.background = pygame.Surface((WIDTH,HEIGHT))
+        self.background.fill((0,0,0))
+        self.background.set_alpha(self.opacity)
 
     def render(self, screen):
         super().render(screen)
-        screen.fill((75,0,20))
+        if not self.fadingOut:
+            screen.fill((75,0,20)) # TODO draw a game over screen with gold that youll never have
+        if self.fadingIn or self.fadingOut:
+            screen.blit(self.background, (0,0))
+    
+    def update(self):
+        super().update()
+        if self.fadingIn:
+            if self.opacity > 0:
+                self.opacity -= 2
+            else: 
+                self.fadingIn = False
+            self.background.set_alpha(self.opacity)
+        elif self.fadingOut:
+            if self.opacity < 254:
+                self.opacity += 2
+            else:
+                self.fadingIn = True
+                self.fadingOut = False
+            self.background.set_alpha(self.opacity)
+
 
 
 class PauseState(State):
@@ -111,3 +152,29 @@ class PauseState(State):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     stateManager.pop()
+
+class DialogueState(State):
+    def __init__(self, texts: list) -> None:
+        super().__init__()
+        self.texts = []
+        for text in texts:
+            self.texts.append(Text(text, "paragraph", (255,255,255), (20,70), False))
+        self.image = pygame.transform.scale(pygame.image.load("assets/other/textbox.png"), (700,220))
+        self.index = 0
+        self.background = pygame.Surface((WIDTH, HEIGHT))
+        self.background.fill((0,0,0))
+        self.background.set_alpha(100)
+    
+    def render(self, screen):
+        super().render(screen)
+        screen.blit(self.background, (0,0))
+        screen.blit(self.image, (150, 450))
+        self.texts[self.index].draw(screen)
+
+
+    
+    def update(self):
+        super().update()
+    
+    def handleInput(self, events):
+        super().handleInput(events)

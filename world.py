@@ -43,6 +43,7 @@ class Door:
             else:
                 if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
                     self.needToChangeRoom = True
+
 class Room:
     def __init__(self, roomDict) -> None:
         self.dict = roomDict
@@ -121,22 +122,47 @@ class Chunk:
         self.doorConnections = chunkDict["doorConnections"]
         for room in chunkDict["rooms"]:
             self.rooms.append(Room(room))
+        # self.fadeThingy = pygame.Surface((WIDTH, HEIGHT))
+        # self.fadeThingy.fill((0,0,0))
+        # self.fadingIn = False
+        # self.fadingOut = False
+        # self.opacity = 0
+        # self.nextRoom = None
     
     def render(self, screen):
         self.getCurrentRoom().render(screen)
+        # if self.fadingIn or self.fadingOut:
+        #     screen.blit(self.fadeThingy, (0,0))
     
     def getCurrentRoom(self) -> Room:
         return self.rooms[self.currentRoom]
 
     def update(self):
+        # if self.fadingIn or self.fadingOut:
+        #     self.fadeThingy.set_alpha(self.opacity)
         self.getCurrentRoom().update()
         if self.getCurrentRoom().needToChangeRoom:
             self.changeRooms()
+        # if self.fadingIn:
+        #     if self.opacity > 0:
+        #         self.opacity -= 15
+        #     else:
+        #         self.fadingIn = False
+        # elif self.fadingOut:
+        #     if self.opacity < 255:
+        #         self.opacity += 15
+        #     else:
+        #         self.fadingOut = False
+        #         if self.nextRoom != None:
+        #             self.currentRoom = self.nextRoom
+        #             self.nextRoom = None
+        #         self.fadingIn = True
+        
 
     def handleInput(self, events):
         self.getCurrentRoom().handleInput(events)
 
-    def changeRooms(self): # BUG maybe move this to room..? dont think so
+    def changeRooms(self):
         for i in range(len(self.doorConnections)):
             if self.getCurrentRoom().currentDoorId in self.doorConnections[i]:
                 if self.doorConnections[i][0] == self.getCurrentRoom().currentDoorId:
@@ -149,8 +175,8 @@ class Chunk:
                 if door.id == self.nextDoorId:
                     self.currentRoom = room[0]
                     room[1].needToChangeRoom = False
+                    # self.fadingOut = True
                     break
-
         for room in self.rooms:
             for door in room.doors:
                 if door.id == self.nextDoorId:

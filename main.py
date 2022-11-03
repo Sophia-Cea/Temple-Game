@@ -3,10 +3,11 @@ import sys
 from state import *
 
 # TODO next:
-# make camera stop at the edges of walls
-# make a level editor that just takes in an array and outputs the colored background array
-# design a decent map to use for now √
+# idk, decorate?
+# maybe make the key thing
+# fading room transition
 
+# what is the enemy behavior?
 # how should the player be able to control where they shoot?
 #   arrow keys
 # should the player be free to move all over the screen (including diagonals) or only up/down left/right?
@@ -19,12 +20,6 @@ from state import *
     - make player controller
         - How do you control what direction the bullet shoots?
             - arrow keys
-    - rework camera
-        - distinguish rooms from each other using doors 
-        - only render current room
-            - maybe have weird little sparkly thingies like fireflies that exist outside the bounds of the room
-    - rework map and rooms so instead of 1 big map you make a bunch of little rooms? 
-        - or find a way to use the doors to figure out which room is which by finding closed shapes
     - enemies
         - make moving enemies
         - improve behavior
@@ -44,6 +39,7 @@ from state import *
     - pause menu √
         - add buttons and text
     - come up with a name
+    - save game ability
     - ...
     - .....
     - ???
@@ -56,7 +52,8 @@ screen = pygame.display.set_mode([WIDTH, HEIGHT], pygame.RESIZABLE)
 display = pygame.Surface((WIDTH, HEIGHT))
 pygame.display.set_icon(pygame.transform.scale(pygame.image.load("assets/other/icon.png"), (64,64)))
 
-stateManager.push(PlayState())
+# stateManager.push(PlayState())
+stateManager.push(MenuState())
 
 running = True
 while running:

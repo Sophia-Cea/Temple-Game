@@ -30,13 +30,18 @@ animatedTiles = {}
 for key in AnimatedTile.tiles:
     animatedTiles[int(key)] = AnimatedTile.tiles[key][0]
 
+# decorativeTiles = {}
+# for key in DecorativeTile.tiles:
+#     decorativeTiles[int(key)] = DecorativeTile.tiles[key]
+
+
 
 class LevelEditor:
     def __init__(self) -> None:
         self.room = Room()
         self.texts = [Text("Level Editor", "subtitle", (255,255,255), (50,1), True), Text("Foreground", "paragraph", (255,255,255), (50, 87), True)]
         self.selectedTile = 1
-        self.mapNames = ["foreground", "background", "enemies", "decorations"]
+        self.mapNames = ["foreground", "background", "enemies", "animated decor", "decorations"]
         self.isDrawing = False
         self.erasing = False
         self.spacing = 10
@@ -110,15 +115,16 @@ class Room:
         self.foreground = foregroundList.copy()
         self.background = backgroundList.copy()
         self.enemies = self.convertMapToZeroes()
-        self.decorations = self.convertMapToZeroes()
+        self.animatedDecorations = self.convertMapToZeroes()
+        self.decor = self.convertMapToZeroes()
         self.gridSize = [len(self.foreground[0]), len(self.foreground)]
         self.tileSize = None
         self.marginX = None
         self.marginY = None
         self.initializeGrid()
-        self.maps = [self.foreground, self.background, self.enemies, self.decorations]
+        self.maps = [self.foreground, self.background, self.enemies, self.animatedDecorations, self.decor]
         self.currentMap = 0
-        self.tileLists = [ForegroundTile.tiles, BackgroundTile.tiles, {"1":pygame.image.load("assets/enemies/nut_devil_1.png")}, animatedTiles]
+        self.tileLists = [ForegroundTile.tiles, BackgroundTile.tiles, {"1":pygame.image.load("assets/enemies/nut_devil_1.png")}, animatedTiles, DecorativeTile.tiles]
 
     def getCurrentTileList(self):
         return self.tileLists[self.currentMap]
@@ -179,7 +185,8 @@ def saveFile():
     roomDict["backgroundMap"] = levelEditor.room.background
     roomDict["foregroundBarriers"] = levelEditor.room.foreground
     roomDict["enemies"] = levelEditor.room.enemies
-    roomDict["decoration"] = levelEditor.room.decorations
+    roomDict["animatedDecoration"] = levelEditor.room.animatedDecorations
+    roomDict["decor"] = levelEditor.room.decor
     with open(file, "w") as f:
         json.dump(roomDict, f)
 

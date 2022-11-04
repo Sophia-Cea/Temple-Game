@@ -113,6 +113,8 @@ class Room:
 
         return Rect(0, 0, right, bottom)
 
+
+
 class Chunk:
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -122,41 +124,44 @@ class Chunk:
         self.doorConnections = chunkDict["doorConnections"]
         for room in chunkDict["rooms"]:
             self.rooms.append(Room(room))
-        # self.fadeThingy = pygame.Surface((WIDTH, HEIGHT))
-        # self.fadeThingy.fill((0,0,0))
-        # self.fadingIn = False
-        # self.fadingOut = False
-        # self.opacity = 0
-        # self.nextRoom = None
+        self.fadeThingy = pygame.Surface((WIDTH, HEIGHT))
+        self.fadeThingy.fill((0,0,0))
+        self.fadingIn = False
+        self.fadingOut = False
+        self.opacity = 225
+        self.transitioning = False
     
     def render(self, screen):
         self.getCurrentRoom().render(screen)
-        # if self.fadingIn or self.fadingOut:
-        #     screen.blit(self.fadeThingy, (0,0))
+        if self.fadingIn or self.fadingOut:
+            screen.blit(self.fadeThingy, (0,0))
     
     def getCurrentRoom(self) -> Room:
         return self.rooms[self.currentRoom]
 
     def update(self):
-        # if self.fadingIn or self.fadingOut:
-        #     self.fadeThingy.set_alpha(self.opacity)
+        if self.fadingIn or self.fadingOut:
+            self.fadeThingy.set_alpha(self.opacity)
         self.getCurrentRoom().update()
         if self.getCurrentRoom().needToChangeRoom:
-            self.changeRooms()
-        # if self.fadingIn:
-        #     if self.opacity > 0:
-        #         self.opacity -= 15
-        #     else:
-        #         self.fadingIn = False
-        # elif self.fadingOut:
-        #     if self.opacity < 255:
-        #         self.opacity += 15
-        #     else:
-        #         self.fadingOut = False
-        #         if self.nextRoom != None:
-        #             self.currentRoom = self.nextRoom
-        #             self.nextRoom = None
-        #         self.fadingIn = True
+            self.transitioning = True
+            self.fadingOut = True
+            # self.changeRooms()
+
+        if self.fadingIn:
+            if self.opacity > 0:
+                self.opacity -= 15
+            else:
+                self.fadingIn = False
+                self.opacity = 255
+                self.fadeThingy.set_alpha(self.opacity)
+        elif self.fadingOut:
+            if self.opacity < 255:
+                self.opacity += 15
+            else:
+                self.fadingOut = False
+                self.fadingIn = True
+                self.changeRooms()
         
 
     def handleInput(self, events):
@@ -175,7 +180,6 @@ class Chunk:
                 if door.id == self.nextDoorId:
                     self.currentRoom = room[0]
                     room[1].needToChangeRoom = False
-                    # self.fadingOut = True
                     break
         for room in self.rooms:
             for door in room.doors:

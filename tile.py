@@ -84,3 +84,10 @@ class AnimatedTile(Tile):
             else:
                 self.currentFrame = 0
 
+class DecorativeTile(Tile):
+    tiles = {
+        1: pygame.transform.scale(pygame.image.load("assets/decorativeItems/colum_1.png"), (Tile.tileSize, Tile.tileSize*3))
+    }
+    def __init__(self, x, y, type) -> None:
+        super().__init__(x, y, type)
+

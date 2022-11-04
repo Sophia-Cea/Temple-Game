@@ -49,13 +49,11 @@ class PlayState(State):
     def __init__(self) -> None:
         super().__init__()
         
-
     def render(self, screen):
         super().render(screen)
         screen.fill((0,0,10))
         world.render(screen)
         player.render(screen)
-
 
     def update(self):
         super().update()
@@ -63,6 +61,10 @@ class PlayState(State):
         player.update()
         if player.health <= 0:
             stateManager.push(GameOverState())
+        # if world.getCurrentChunk().transitioning:
+        #     stateManager.push(FadeOutState(15))
+        #     world.getCurrentChunk().transitioning = False
+        #     world.getCurrentChunk().changeRooms()
 
 
     def handleInput(self, events):
@@ -126,7 +128,7 @@ class GameOverState(State):
         super().update()
         if self.fadingIn:
             if self.opacity > 0:
-                self.opacity -= 2
+                self.opacity -= 6
             else: 
                 self.fadingIn = False
             self.background.set_alpha(self.opacity)
@@ -153,7 +155,7 @@ class PauseState(State):
                 if event.key == pygame.K_q:
                     stateManager.pop()
 
-class DialogueState(State):
+class DialogueState(State): # TODO make this really cool and type each character one at a time.
     def __init__(self, texts: list) -> None:
         super().__init__()
         self.texts = []
@@ -171,10 +173,34 @@ class DialogueState(State):
         screen.blit(self.image, (150, 450))
         self.texts[self.index].draw(screen)
 
+    def handleInput(self, events):
+        super().handleInput(events)
+        for event in events:
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    self.index += 1
 
     
     def update(self):
         super().update()
+
+
+class FadeOutState(State):
+    def __init__(self, speed=15) -> None:
+        super().__init__()
+        self.fadeThingy = pygame.Surface((WIDTH,HEIGHT))
+        self.fadeThingy.fill((0,0,0))
+        self.opacity = 0
+        self.speed = speed
+
+    def render(self, screen):
+        super().render(screen)
+        screen.blit(self.fadeThingy, (0,0))
     
-    def handleInput(self, events):
-        super().handleInput(events)
+    def update(self):
+        super().update()
+        self.fadeThingy.set_alpha(self.opacity)
+        if self.opacity < 255:
+            self.opacity += self.speed
+        else:
+            stateManager.pop()

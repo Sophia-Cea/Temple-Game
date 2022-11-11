@@ -57,7 +57,7 @@ class PlayState(State):
     def update(self):
         super().update()
         world.update()
-        player.update()
+        player.update(world.getCurrentChunk().getCurrentRoom().foregroundTiles)
         if player.health <= 0:
             stateManager.push(GameOverState())
         # if world.getCurrentChunk().transitioning:
@@ -69,7 +69,7 @@ class PlayState(State):
     def handleInput(self, events):
         super().handleInput(events)
         world.handleInput(events)
-        player.handleInput(events, world.getCurrentChunk().getCurrentRoom().foregroundTiles)
+        player.handleInput(events)
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:

@@ -132,68 +132,79 @@ class MoveState(State):
             self.animation = self.animations["down"]
         elif keys[pygame.K_d]:
             self.animation = self.animations["right"]
-        self.acceleration = 50
-        self.velocity = 10
-        self.maxSpeed = 500
-        self.acclerating = True
-        self.decelerating = False
+        self.acceleration = 80
+        self.xVelocity = 0
+        self.yVelocity = 0
+        self.maxSpeed = 300
+        self.acceleratingX = False
+        self.acceleratingY = False
+        self.deceleratingX = False
+        self.deceleratingY = False
+        # self.decelerating = False
 
-
-    def handleInput(self, events, barrierMap):
-        super().handleInput(events)
+    def update(self, barrierMap):
         dt = delta()
+
+        if self.xVelocity != 0:
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x + self.xVelocity*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
+            if rect == None:
+                self.player.pos[0] += self.xVelocity * dt
+            else: 
+                if self.xVelocity > 0:
+                    self.player.pos[0] += (self.player.pos[0] - rect.left) * dt
+                else:
+                    self.player.pos[0] += (self.player.pos[0] - rect.right) * dt
+
+        
+        if self.yVelocity != 0:
+            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x, self.player.rect.y + self.yVelocity*dt, self.player.rect.width, self.player.rect.height))
+            if rect == None:
+                self.player.pos[1] += self.yVelocity * dt
+            else:
+                if self.yVelocity > 0:
+                    self.player.pos[1] += (self.player.pos[1] - rect.top) * dt
+                else:
+                    self.player.pos[1] += (self.player.pos[1] - rect.bottom) * dt
+
+    def handleInput(self, events):
+        super().handleInput(events)
+        # dt = delta()
         keys = pygame.key.get_pressed()
 
         if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
-            self.decelerating = True
-            self.accelerating = False
-            if self.animation == self.animations["left"]:
-                self.player.lastDirectionFaced = "left"
-            elif self.animation == self.animations["right"]:
-                self.player.lastDirectionFaced = "right"
-            else:
-                self.player.lastDirectionFaced = "front"
-            
-            if self.decelerating:
-                self.velocity -= self.acceleration
-            if self.velocity <= 0:
+            if self.xVelocity in range(-30,30) and self.yVelocity in range(-30,30):
                 self.player.currentState = StateGenerator.setState("idle", self.player)
-
-        elif keys[pygame.K_w] and keys[pygame.K_a] and keys[pygame.K_s] and keys[pygame.K_d]:
-            self.decelerating = False
-            if self.velocity < self.maxSpeed:
-                self.acclerating = True
-                self.velocity += self.acceleration
+        
+        if not keys[pygame.K_d] and not keys[pygame.K_a]:
+            if self.xVelocity not in range(-30,30):
+                if self.xVelocity < 0:
+                    self.xVelocity += self.acceleration
+                else: self.xVelocity -= self.acceleration
             else:
-                self.accelerating = False
+                self.xVelocity = 0
+        if not keys[pygame.K_w] and not keys[pygame.K_s]:
+            if self.yVelocity not in range(-30,30):
+                if self.yVelocity < 0:
+                    self.yVelocity += self.acceleration
+                else: self.yVelocity -= self.acceleration
+            else:
+                self.yVelocity = 0
 
         if keys[pygame.K_a]:
-            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x - self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
-            if rect == None:
-                self.player.pos[0] -= self.player.speed * dt
-            else: 
-                self.player.pos[0] -= (self.player.pos[0] - rect.right) * dt
+            if self.xVelocity > -self.maxSpeed:
+                self.xVelocity -= self.acceleration
 
         if keys[pygame.K_d]:
-            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x + self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
-            if rect == None:
-                self.player.pos[0] += self.player.speed * dt
-            else:
-                self.player.pos[0] += (rect.left - self.player.rect.right) * dt
+            if self.xVelocity < self.maxSpeed:
+                self.xVelocity += self.acceleration
 
         if keys[pygame.K_w]:
-            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x, self.player.rect.y - self.player.speed*dt, self.player.rect.width, self.player.rect.height))
-            if rect == None:
-                self.player.pos[1] -= self.player.speed * dt
-            else:
-                self.player.pos[1] -= (self.player.rect.top - rect.bottom) * dt
+            if self.yVelocity > -self.maxSpeed:
+                self.yVelocity -= self.acceleration
 
         if keys[pygame.K_s]:
-            rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x, self.player.rect.y + self.player.speed * dt, self.player.rect.width, self.player.rect.height))
-            if rect == None:
-                self.player.pos[1] += self.player.speed * dt
-            else:
-                self.player.pos[1] += (rect.top - self.player.rect.bottom) * dt
+            if self.yVelocity < self.maxSpeed:
+                self.yVelocity += self.acceleration
         
         if self.animation != None:
             if self.animation == self.animations["up"]:

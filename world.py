@@ -112,8 +112,6 @@ class Room:
 
         return Rect(0, 0, right, bottom)
 
-
-
 class Chunk:
     def __init__(self, chunkDict) -> None:
         self.chunkDict = chunkDict
@@ -192,20 +190,6 @@ class Chunk:
                         player.pos[0] += player.rect.width
                     break
         self.nextDoorId = None
-
-class Chunk1(Chunk):
-    def __init__(self, chunkDict) -> None:
-        super().__init__(chunkDict)
-
-    def changeRooms(self):
-        if self.currentRoom == 0:
-            if self.getCurrentRoom().currentDoorId == 1:
-                return 1
-            elif self.getCurrentRoom().currentDoorId == 2:
-                return 2
-        else:
-            super().changeRooms()
-
 
 class World:
     def __init__(self) -> None:

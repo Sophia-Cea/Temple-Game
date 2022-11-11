@@ -62,20 +62,20 @@ class Player(Entity):
         # self.currentState.render(screen, self.rect.move(-camera.xOffset + WIDTH/2, -camera.yOffest + HEIGHT/2))
         self.currentState.render(screen, camera.project(self.rect))
 
-    def update(self):
+    def update(self, barrierMap):
         super().update()
         # camera.lerp_to(self.rect.centerx, self.rect.centery, 0.05)
-        self.currentState.update()
+        if self.getState() != "moving":
+            self.currentState.update()
+        else:
+            self.currentState.update(barrierMap)
     
     def takeDamage(self, amt):
         if self.getState() != "attacking":
             self.health -= amt
 
-    def handleInput(self, events, barrierMap): # BUG need to put in new parameter
-        if self.getState() != "moving":
-            self.currentState.handleInput(events)
-        else:
-            self.currentState.handleInput(events, barrierMap)
+    def handleInput(self, events): # BUG need to put in new parameter
+        self.currentState.handleInput(events)
 
 
 class FixedEnemy(Entity):

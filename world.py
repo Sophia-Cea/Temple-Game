@@ -39,7 +39,6 @@ class Door:
             if self.isVertical:
                 if player.rect.centerx in range(self.rect.centerx-10, self.rect.centerx+10):
                     self.needToChangeRoom = True
-                    print("true")
             else:
                 if player.rect.centery in range(self.rect.centery-10, self.rect.centery+10):
                     self.needToChangeRoom = True
@@ -129,7 +128,7 @@ class Chunk:
         self.fadingIn = False
         self.fadingOut = False
         self.opacity = 225
-        self.transitioning = False
+        # self.transitioning = False
     
     def render(self, screen):
         self.getCurrentRoom().render(screen)
@@ -144,9 +143,7 @@ class Chunk:
             self.fadeThingy.set_alpha(self.opacity)
         self.getCurrentRoom().update()
         if self.getCurrentRoom().needToChangeRoom:
-            self.transitioning = True
             self.fadingOut = True
-            # self.changeRooms()
 
         if self.fadingIn:
             if self.opacity > 0:
@@ -219,6 +216,11 @@ class World:
             self.chunks.append(Chunk(self.world[key]))
         self.currentChunk = 0
         self.heartImg = pygame.transform.scale(pygame.image.load("assets/other/heart.png"), (30,30))
+        self.fadeThingy = pygame.Surface((WIDTH, HEIGHT))
+        self.fadeThingy.fill((0,0,0))
+        self.fadingIn = False
+        self.fadingOut = False
+        self.opacity = 225
     
     def getCurrentChunk(self) -> Chunk:
         return self.chunks[self.currentChunk]
@@ -227,13 +229,33 @@ class World:
         self.getCurrentChunk().render(screen)
         for i in range(player.health):
             screen.blit(self.heartImg, (35+i*40, 30))
+        if self.fadingIn or self.fadingOut:
+            screen.blit(self.fadeThingy, (0,0))
 
     def update(self):
+        if self.fadingIn or self.fadingOut:
+            self.fadeThingy.set_alpha(self.opacity)
         camera.set_bounds(self.getCurrentChunk().getCurrentRoom().getBounds())
         camera.lerp_to(player.rect.centerx, player.rect.centery, 0.05)
         if self.currentChunk == 0:
             self.getCurrentChunk().getCurrentRoom().update()
             if self.getCurrentChunk().getCurrentRoom().needToChangeRoom:
+                self.fadingOut = True
+            
+        if self.fadingIn:
+            if self.opacity > 0:
+                self.opacity -= 15
+            else:
+                self.fadingIn = False
+                self.opacity = 255
+                self.fadeThingy.set_alpha(self.opacity)
+        elif self.fadingOut:
+            if self.opacity < 255:
+                self.opacity += 15
+            else:
+                self.fadingOut = False
+                self.fadingIn = True
+                
                 # TODO make a door class that stores next intended position
                 # Gahd damn this is so sloppy
                 # You really want to have 4 lines and an if statement for every door in the game? that sounds like a mess
@@ -241,12 +263,10 @@ class World:
                 if self.getCurrentChunk().getCurrentRoom().currentDoorId == 1:
                     self.currentChunk = 1
                     player.pos = [12*Tile.tileSize, 2*Tile.tileSize]
-                    print("moved to chunk 1!")
                 elif self.getCurrentChunk().getCurrentRoom().currentDoorId == 2:
                     self.currentChunk = 2
                     player.pos = [6*Tile.tileSize, 10*Tile.tileSize]
                     self.getCurrentChunk().currentRoom = 6
-                    print("moved to chunk 2!")
 
         else:
             self.getCurrentChunk().update()

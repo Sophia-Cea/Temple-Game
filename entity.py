@@ -35,7 +35,7 @@ class Player(Entity):
         self.lives = 3
         self.speed = 500
         self.lastDirectionFaced = "front"
-        self.rect = pygame.Rect(0, 0, 64, 120)
+        self.rect = pygame.Rect(0, 0, Tile.tileSize*.9, Tile.tileSize*2*.9)
         self.health = 5 #lives
         self.weapons = {
             "mace" : True,

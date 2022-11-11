@@ -5,7 +5,7 @@ from state import *
 # TODO next:
 # idk, decorate?
 # maybe make the key thing
-# fading room transition
+# fading room transition √
 
 # what is the enemy behavior?
 # how should the player be able to control where they shoot?

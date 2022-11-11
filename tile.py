@@ -62,7 +62,6 @@ class AnimatedTile(Tile):
     }
     def __init__(self, x, y, type) -> None:
         super().__init__(x, y, type)
-        print(type)
         try:
             self.animation = AnimatedTile.tiles[type] #TODO update this
         except:

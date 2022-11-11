@@ -132,20 +132,40 @@ class MoveState(State):
             self.animation = self.animations["down"]
         elif keys[pygame.K_d]:
             self.animation = self.animations["right"]
-        
+        self.acceleration = 50
+        self.velocity = 10
+        self.maxSpeed = 500
+        self.acclerating = True
+        self.decelerating = False
+
+
     def handleInput(self, events, barrierMap):
         super().handleInput(events)
         dt = delta()
         keys = pygame.key.get_pressed()
 
         if not keys[pygame.K_w] and not keys[pygame.K_a] and not keys[pygame.K_s] and not keys[pygame.K_d]:
+            self.decelerating = True
+            self.accelerating = False
             if self.animation == self.animations["left"]:
                 self.player.lastDirectionFaced = "left"
             elif self.animation == self.animations["right"]:
                 self.player.lastDirectionFaced = "right"
             else:
                 self.player.lastDirectionFaced = "front"
-            self.player.currentState = StateGenerator.setState("idle", self.player)
+            
+            if self.decelerating:
+                self.velocity -= self.acceleration
+            if self.velocity <= 0:
+                self.player.currentState = StateGenerator.setState("idle", self.player)
+
+        elif keys[pygame.K_w] and keys[pygame.K_a] and keys[pygame.K_s] and keys[pygame.K_d]:
+            self.decelerating = False
+            if self.velocity < self.maxSpeed:
+                self.acclerating = True
+                self.velocity += self.acceleration
+            else:
+                self.accelerating = False
 
         if keys[pygame.K_a]:
             rect = self.player.handleBarrierCollision(barrierMap, pygame.Rect(self.player.rect.x - self.player.speed*dt, self.player.rect.y, self.player.rect.width, self.player.rect.height))
@@ -215,25 +235,53 @@ class MoveState(State):
 class AttackState(State):
     def __init__(self, player) -> None:
         super().__init__(player)
+        self.frameFrq = 80
+        pygame.time.set_timer(pygame.USEREVENT, self.frameFrq)
         self.animations = {
-            "mace" : [pygame.Surface((60,60)), pygame.Surface((40,40))],
+            "mace" : { 
+                "right" : [
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_1.png"), (132, 120)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_2.png"), (132, 120)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_3.png"), (132, 120)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_4.png"), (136, 152)),
+                    ],
+                "front" : [
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_front_1.png"), (56,132)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_front_2.png"), (56,132)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_front_3.png"), (56,132)),
+                    pygame.transform.scale(pygame.image.load("assets/player/attack_mace_front_4.png"), (56,132))
+                ],
+                "left" : [
+                    pygame.transform.flip(pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_1.png"), (132, 120)), True, False),
+                    pygame.transform.flip(pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_2.png"), (132, 120)), True, False),
+                    pygame.transform.flip(pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_3.png"), (132, 120)), True, False),
+                    pygame.transform.flip(pygame.transform.scale(pygame.image.load("assets/player/attack_mace_side_4.png"), (132, 120)), True, False),
+                ],
+            },
             "staff" : [pygame.Surface((60,60)), pygame.Surface((40,40))],
             "gun" : [pygame.Surface((60,60)), pygame.Surface((40,40))]
         }
-        self.animations["mace"][0].fill((255,0,0))
-        self.animations["mace"][1].fill((255,0,0))
+        # self.animations["mace"][0].fill((255,0,0))
+        # self.animations["mace"][1].fill((255,0,0))
         self.animations["staff"][0].fill((0,255,0))
         self.animations["staff"][1].fill((0,255,0))
         self.animations["gun"][0].fill((0,0,255))
         self.animations["gun"][1].fill((0,0,255))
-        self.animation = self.animations[self.player.weapon]
+        self.weapon = self.animations[self.player.weapon]
+        self.animation = self.weapon["front"]
 
     def handleInput(self, events):
         super().handleInput(events)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.animation = self.weapon["left"]
+        elif keys[pygame.K_RIGHT]:
+            self.animation = self.weapon["right"]
+
     
     def update(self):
         if self.currentFrame == len(self.animation) - 1:
             self.player.currentState = StateGenerator.setState("moving", self.player)
-            self.currentFrame = 0
+            self.currentFrame = 0 
     
 

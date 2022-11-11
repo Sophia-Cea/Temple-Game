@@ -213,8 +213,14 @@ class Button:
     def __init__(self, text, rect, cornerRadius, textColor=Colors.textCol, gradCol1=Colors.buttonCol1, gradCol2=Colors.buttonCol2, onclickFunc=None) -> None:
         self.rect: pygame.Rect = rect
         self.convertedRect = convertRect((self.rect.x, self.rect.y, self.rect.width, self.rect.height))
-        self.surface = pygame.Surface((self.convertedRect.width, self.convertedRect.height), pygame.SRCALPHA)
-        self.hoverSurface = pygame.Surface((self.convertedRect.width, self.convertedRect.height), pygame.SRCALPHA)
+        self.convertedRect.height = self.convertedRect.w * 3/8
+        self.hoverRect = pygame.Rect(self.convertedRect.x - self.convertedRect.width*.05, self.convertedRect.y - self.convertedRect.height*.05, self.convertedRect.width*1.1, self.convertedRect.height*1.1)
+        self.surface = pygame.transform.scale(pygame.image.load("assets/other/button.png"), self.convertedRect.size) #pygame.Surface((self.convertedRect.width, self.convertedRect.height), pygame.SRCALPHA)
+        self.hoverSurface = pygame.transform.scale(pygame.image.load("assets/other/button.png"), self.convertedRect.size) #pygame.Surface((self.convertedRect.width, self.convertedRect.height), pygame.SRCALPHA)
+        yee = pygame.Surface(self.convertedRect.size)
+        yee.fill((0,0,0))
+        yee.set_alpha(60)
+        self.hoverSurface.blit(yee, (0,0))
         self.textContent = text
         self.textColor = textColor
         self.cornerRadius = cornerRadius
@@ -230,15 +236,15 @@ class Button:
         Button.buttons.append(self)
 
     def drawImage(self, gradCol1, gradCol2, textCol, surface):
-        color = gradCol1.copy()
-        inc1 = (gradCol2[0] - gradCol1[0])/(self.convertedRect.height - self.cornerRadius)
-        inc2 = (gradCol2[1] - gradCol1[1])/(self.convertedRect.height - self.cornerRadius)
-        inc3 = (gradCol2[2] - gradCol1[2])/(self.convertedRect.height - self.cornerRadius)
-        for i in range(self.convertedRect.height - self.cornerRadius):
-            pygame.draw.rect(surface, color, pygame.Rect(0, i, self.convertedRect.width, self.cornerRadius), border_radius=self.cornerRadius)
-            color[0] += inc1
-            color[1] += inc2
-            color[2] += inc3
+        # color = gradCol1.copy()
+        # inc1 = (gradCol2[0] - gradCol1[0])/(self.convertedRect.height - self.cornerRadius)
+        # inc2 = (gradCol2[1] - gradCol1[1])/(self.convertedRect.height - self.cornerRadius)
+        # inc3 = (gradCol2[2] - gradCol1[2])/(self.convertedRect.height - self.cornerRadius)
+        # for i in range(self.convertedRect.height - self.cornerRadius):
+        #     pygame.draw.rect(surface, color, pygame.Rect(0, i, self.convertedRect.width, self.cornerRadius), border_radius=self.cornerRadius)
+        #     color[0] += inc1
+        #     color[1] += inc2
+        #     color[2] += inc3
         text = Fonts.fonts["button"].render(self.textContent, True, textCol)
         surface.blit(text, (surface.get_width()/2-text.get_width()/2, surface.get_height()/2-text.get_height()/2))
 
@@ -251,11 +257,17 @@ class Button:
         if self.hovering == False:
             surface.blit(self.resizedSurface, (self.convertedRect.x, self.convertedRect.y))
         else:
-            surface.blit(self.resizedHoverSurface, (self.convertedRect.x, self.convertedRect.y))
+            # surface.blit(self.resizedHoverSurface, (self.convertedRect.x, self.convertedRect.y))
+            # surface.blit(pygame.transform.scale(self.resizedSurface, (self.convertedRect.width*1.1, self.convertedRect.height*1.1)), (self.convertedRect.x-self.convertedRect.width*.05, self.convertedRect.y-self.convertedRect.height*.05))
+            surface.blit(pygame.transform.scale(self.resizedSurface, (self.hoverRect.width, self.hoverRect.height)), (self.hoverRect.x, self.hoverRect.y))
 
     def checkMouseOver(self, pos):
-        if self.convertedRect.collidepoint(pos):
-            return True
+        if self.hovering == False:
+            if self.convertedRect.collidepoint(pos):
+                return True
+        else:
+            if self.hoverRect.collidepoint(pos):
+                return True
 
     def resize(self, surface):
         self.convertedRect = convertRect(surface, (self.rect.x, self.rect.y, self.rect.width, self.rect.height))

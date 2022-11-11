@@ -1,4 +1,3 @@
-from attr import s
 from world import *
 
 world = World()
@@ -82,6 +81,7 @@ class MenuState(State):
         self.texts = [Text("Curse of Pupper", "title", (255,250,235), (50,10), True)]
         self.buttons = [Button("New Game", pygame.Rect(35,50, 30,12), 35, [255,255,255], [220,170,200], [120,0,50])]
         self.bg = pygame.transform.scale(pygame.image.load("assets/other/menu_bg.png"), (WIDTH,HEIGHT))
+        self.deltaY = 0
     
     def render(self, screen):
         # screen.fill((50, 0, 100))
@@ -94,6 +94,18 @@ class MenuState(State):
     
     def update(self):
         super().update()
+        pos = pygame.mouse.get_pos()
+        self.texts[0].pos = [self.texts[0].pos[0], self.texts[0].pos[1] + math.sin(self.deltaY)/10]
+        if self.deltaY < math.pi * 2:
+            self.deltaY += .05
+        else:
+            self.deltaY = 0
+        for button in self.buttons:
+            if button.checkMouseOver(pos):
+                button.hovering = True
+            else:
+                button.hovering = False
+
     
     def handleInput(self, events):
         super().handleInput(events)
@@ -104,25 +116,29 @@ class MenuState(State):
                     if self.buttons[i].checkMouseOver(pos):
                         if i == 0:
                             stateManager.push(PlayState())
-                            # stateManager.push(DialogueState(["yee", "yeeeee", "meep"]))
 
 
 class GameOverState(State):
     def __init__(self) -> None:
         super().__init__()
         self.fadingIn = False
+        self.text = Text(choice(["Game over.", "Oopsie...", "Really?", "Again?", "Rip", "Git gud idiot"]), "title", (255,255,255), (50, 35), True)
         self.fadingOut = True
         self.opacity = 0
-        self.background = pygame.Surface((WIDTH,HEIGHT))
-        self.background.fill((0,0,0))
-        self.background.set_alpha(self.opacity)
+        self.background = pygame.transform.scale(pygame.image.load("assets/other/game_over.png"), (WIDTH,HEIGHT))
+        # self.background.fill((0,0,0))
+        self.fadeThingy = pygame.Surface((WIDTH,HEIGHT))
+        self.fadeThingy.fill((0,0,0))
+        self.fadeThingy.set_alpha(self.opacity)
 
     def render(self, screen):
         super().render(screen)
         if not self.fadingOut:
-            screen.fill((75,0,20)) # TODO draw a game over screen with gold that youll never have
+            screen.blit(self.background, (0,0)) # TODO draw a game over screen with gold that youll never have bc ur stupid and you died.
+            if not self.fadingIn:
+                self.text.draw(screen)
         if self.fadingIn or self.fadingOut:
-            screen.blit(self.background, (0,0))
+            screen.blit(self.fadeThingy, (0,0))
     
     def update(self):
         super().update()
@@ -131,14 +147,14 @@ class GameOverState(State):
                 self.opacity -= 6
             else: 
                 self.fadingIn = False
-            self.background.set_alpha(self.opacity)
+            self.fadeThingy.set_alpha(self.opacity)
         elif self.fadingOut:
             if self.opacity < 254:
                 self.opacity += 2
             else:
                 self.fadingIn = True
                 self.fadingOut = False
-            self.background.set_alpha(self.opacity)
+            self.fadeThingy.set_alpha(self.opacity)
 
 
 

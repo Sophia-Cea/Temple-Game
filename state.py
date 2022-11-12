@@ -60,12 +60,7 @@ class PlayState(State):
         player.update(world.getCurrentChunk().getCurrentRoom().foregroundTiles)
         if player.health <= 0:
             stateManager.push(GameOverState())
-        # if world.getCurrentChunk().transitioning:
-        #     stateManager.push(FadeOutState(15))
-        #     world.getCurrentChunk().transitioning = False
-        #     world.getCurrentChunk().changeRooms()
-
-
+    
     def handleInput(self, events):
         super().handleInput(events)
         world.handleInput(events)

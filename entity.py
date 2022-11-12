@@ -27,7 +27,6 @@ class Entity:
                         return rect
         return None
 
-
 class Player(Entity):
     def __init__(self, pos) -> None:
         super().__init__()
@@ -44,6 +43,15 @@ class Player(Entity):
         }
         self.weapon = "mace"
         self.currentState = StateGenerator.setState("idle", self)
+        self.cameraShaking = False
+        self.randomOffsetX = 0
+        self.randomOffsetY = 0
+        self.shakeIntensity = 3
+
+    def shakeCamera(self, intensity):
+        self.cameraShaking = True
+        pygame.time.set_timer(pygame.USEREVENT+3, 350)
+        self.shakeIntensity = intensity
 
     def setWeapon(self, weapon):
         if self.weapons[weapon] == True:
@@ -69,15 +77,26 @@ class Player(Entity):
             self.currentState.update()
         else:
             self.currentState.update(barrierMap)
+        if self.cameraShaking:
+            self.randomOffsetX = randint(-self.shakeIntensity, self.shakeIntensity)
+            self.randomOffsetY = randint(-self.shakeIntensity, self.shakeIntensity)
+            camera.xOffset += self.randomOffsetX
+            camera.yOffset += self.randomOffsetX
+            print(self.randomOffsetX, self.randomOffsetY)
+
     
     def takeDamage(self, amt):
         if self.getState() != "attacking":
             self.health -= amt
+            self.shakeCamera(5)
 
     def handleInput(self, events): # BUG need to put in new parameter
         self.currentState.handleInput(events)
-
-
+        for event in events:
+            if event.type == pygame.USEREVENT+3:
+                self.cameraShaking = False
+                self.randomOffsetX = 0
+                self.randomOffsetY = 0
 class FixedEnemy(Entity):
     size = Tile.tileSize*2
     def __init__(self, pos, bulletFrq=3000) -> None:
@@ -87,12 +106,8 @@ class FixedEnemy(Entity):
         self.rect = pygame.Rect(self.pos[0], self.pos[1], FixedEnemy.size, FixedEnemy.size)
         self.bullets = []
         self.bulletFrq = bulletFrq
-        # for i in range(5):
-        #     self.bullets.append(Bullet(self.rect.center))
         pygame.time.set_timer(pygame.USEREVENT + 1, self.bulletFrq)
         self.readyToLaunch = False
-        # self.surface = pygame.Surface(self.rect.size)
-        # self.surface.fill((255,0,255))
         self.surface = pygame.transform.scale(pygame.image.load("assets/enemies/nut_devil_1.png"), self.rect.size)
 
     def update(self):

@@ -132,15 +132,10 @@ class MoveState(State):
             self.animation = self.animations["down"]
         elif keys[pygame.K_d]:
             self.animation = self.animations["right"]
-        self.acceleration = 80
+        self.acceleration = 50
         self.xVelocity = 0
         self.yVelocity = 0
-        self.maxSpeed = 300
-        self.acceleratingX = False
-        self.acceleratingY = False
-        self.deceleratingX = False
-        self.deceleratingY = False
-        # self.decelerating = False
+        self.maxSpeed = 500
 
     def update(self, barrierMap):
         dt = delta()
@@ -154,6 +149,7 @@ class MoveState(State):
                     self.player.pos[0] += (self.player.pos[0] - rect.left) * dt
                 else:
                     self.player.pos[0] += (self.player.pos[0] - rect.right) * dt
+                self.xVelocity = 0
 
         
         if self.yVelocity != 0:
@@ -165,6 +161,7 @@ class MoveState(State):
                     self.player.pos[1] += (self.player.pos[1] - rect.top) * dt
                 else:
                     self.player.pos[1] += (self.player.pos[1] - rect.bottom) * dt
+                self.yVelocity = 0
 
     def handleInput(self, events):
         super().handleInput(events)
@@ -272,27 +269,26 @@ class AttackState(State):
             "staff" : [pygame.Surface((60,60)), pygame.Surface((40,40))],
             "gun" : [pygame.Surface((60,60)), pygame.Surface((40,40))]
         }
-        # self.animations["mace"][0].fill((255,0,0))
-        # self.animations["mace"][1].fill((255,0,0))
         self.animations["staff"][0].fill((0,255,0))
         self.animations["staff"][1].fill((0,255,0))
         self.animations["gun"][0].fill((0,0,255))
         self.animations["gun"][1].fill((0,0,255))
         self.weapon = self.animations[self.player.weapon]
-        self.animation = self.weapon["front"]
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            self.animation = self.weapon["left"]
+        elif keys[pygame.K_d]:
+            self.animation = self.weapon["right"]
+        else:
+            self.animation = self.weapon["front"]
 
     def handleInput(self, events):
         super().handleInput(events)
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self.animation = self.weapon["left"]
-        elif keys[pygame.K_RIGHT]:
-            self.animation = self.weapon["right"]
 
     
     def update(self):
         if self.currentFrame == len(self.animation) - 1:
-            self.player.currentState = StateGenerator.setState("moving", self.player)
+            self.player.currentState = StateGenerator.setState("idle", self.player)
             self.currentFrame = 0 
     
 

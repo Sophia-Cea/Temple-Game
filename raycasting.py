@@ -63,13 +63,18 @@ class LightSource:
 
     def _get_lighting_polygon(self):
         vertices: list[Vector2] = []
-        max_x = -1000000
-        min_x = 10000000
-        max_y = -1000000
-        min_y = 1000000
+        max_x = None
+        min_x = None
+        max_y = None
+        min_y = None
         # collect polygon vertices (scale to pixels) (world position)
         for ray in self.rays:
             pt = ray.get_pt_at_radius(10) * Tile.tileSize
+            if max_x is None:
+                max_x = pt.x
+                max_y = pt.y
+                min_x = pt.x
+                min_y = pt.y
             max_x = max(pt.x, max_x)
             max_y = max(pt.y, max_y)
             min_x = min(pt.x, min_x)
@@ -224,7 +229,7 @@ def draw_polygon_with_image(polygon: list[Vector2], poly_rect: Rect, image: Surf
     # expects polygon to be translated already
     pygame.draw.polygon(mask_surf, (255,255,255), polygon)
 
-    surf = Surface(image.get_size())
+    surf = Surface(poly_rect.size)
     r = image.get_rect()
     r.center = center
     
@@ -247,7 +252,7 @@ if __name__ == "__main__":
     ticks = 0
     running_time = 0
 
-    temp_img =  pygame.transform.scale(pygame.image.load("assets/tiles/tile_14.png"), (400,400))
+    temp_img =  pygame.transform.scale(pygame.image.load("assets/tiles/tile_15.png"), (400,400))
     while True:
         delta = clock.tick() / 1000
         ticks+=1
@@ -286,13 +291,15 @@ if __name__ == "__main__":
     
         screen.fill((0,0,0))
 
-        # world.render(screen)
+        world.render(screen)
 
         p, pr = light_source._get_lighting_polygon()
         light_source._translate_polygon(p, pr.topleft)
-        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, light_source.pos*Tile.tileSize)
+        center = (light_source.pos * Tile.tileSize) - Vector2(pr.topleft)
+        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, center)
         # mask_surf = pygame.transform.scale(mask_surf, (utils.WIDTH, utils.HEIGHT))
-        light_source.debug_draw(screen)
+        # light_source.debug_draw(screen)
+        # screen.blit(light_source.surface, (0,0))
         screen.blit(surf, camera.project(pr))
    
         pygame.display.flip()

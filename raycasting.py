@@ -9,7 +9,7 @@ import utils
 from world import World
 
 class LightSource:
-    ambient_light = 0.2
+    ambient_light = 0.1
     color = (0.5, 0.4, 0.3) # orange-y red
     
     _ambient_color = (255*ambient_light, 255*ambient_light, 255*ambient_light)
@@ -49,17 +49,41 @@ class LightSource:
         # draw full lighting onto temp surface with blend_add, then blit with blend_mult onto dest
         p, pr = light_source._get_lighting_polygon()
         light_source._translate_polygon(p, pr.topleft)
-        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, self.pos)
-        screen.blit(mask_surf, camera.project(pr), pygame.BLEND_MULT)
+        center = (light_source.pos * Tile.tileSize) - Vector2(pr.topleft)
+        surf, mask_surf = self.draw_polygon_with_image(p, pr, light_source.surface, center)
+
+        s = pygame.Surface(camera.rect.size, pygame.SRCALPHA)
+        s.fill(self._ambient_color)
+        s.blit(surf, camera.project(pr))
+        
+        screen.blit(s, (0,0), special_flags=pygame.BLEND_MULT)
+        # pygame.image.save(surf, "surf.png")
+        # pygame.image.save(mask_surf, "mask.png")
+        # pygame.image.save(s, "s.png")
+        # pygame.image.save(screen, "screen.png")
+        # pygame.image.save(self.surface, "light_surf.png")
+        # pygame.quit()
+        # screen.blit(mask_surf, camera.project(pr), pygame.BLEND_MULT)
 
     def _translate_polygon(self, polygon: list[Vector2], top_left: tuple[int, int]):
         for vertice in polygon:
             vertice.x -= top_left[0]
             vertice.y -= top_left[1]
+    
+    def draw_polygon_with_image(self, polygon: list[Vector2], poly_rect: Rect, image: Surface, center: tuple):
+        mask_surf = Surface(poly_rect.size, pygame.SRCALPHA)
+        # expects polygon to be translated already
+        # mask_surf.fill(self._ambient_color)
+        pygame.draw.polygon(mask_surf, (255,255,255), polygon)
 
-    def _draw_polygon(self, polygon: list[Vector2], rect:Rect):
-        self.poly_surf, self.mask_surf = draw_polygon_with_image(polygon, rect, self.surface)
-        return self.poly_surf
+        surf = Surface(poly_rect.size, pygame.SRCALPHA)
+        r = image.get_rect()
+        r.center = center
+        
+        surf.blit(image, r)
+        surf.blit(mask_surf, (0,0), special_flags=pygame.BLEND_RGBA_MULT)
+        # pygame.draw.rect(surf, (255,0,0), surf.get_rect(), 2)
+        return surf, mask_surf
 
     def _get_lighting_polygon(self):
         vertices: list[Vector2] = []
@@ -158,12 +182,11 @@ class Ray:
         return self.pos + (self.dir * radius)
 
 def get_lighting_surfaces() -> tuple[Surface]:
-    surf = pygame.Surface((utils.WIDTH, utils.HEIGHT))
-    surf.set_colorkey((0,0,0))
-    surf.fill((0,0,0))
-    temp_surf = pygame.Surface((utils.WIDTH, utils.HEIGHT))
-    temp_surf.set_colorkey((0,0,0))
-    temp_surf.fill((0,0,0))
+    surf = pygame.Surface((utils.WIDTH, utils.HEIGHT), flags=pygame.SRCALPHA)
+    surf.fill((0,0,0,0))
+
+    temp_surf = pygame.Surface((utils.WIDTH, utils.HEIGHT), flags=pygame.SRCALPHA)
+   
     return (surf, temp_surf)
 
 def init_light_surface(num_layers, draw_layer, before_draw=None):
@@ -174,7 +197,7 @@ def init_light_surface(num_layers, draw_layer, before_draw=None):
 
     for i in range(num_layers):
         draw_layer(temp_surf, i, center)
-        surf.blit(temp_surf, (0,0), special_flags=pygame.BLEND_ADD)
+        surf.blit(temp_surf, (0,0), special_flags=pygame.BLEND_RGBA_ADD)
 
     return surf
 
@@ -209,34 +232,24 @@ def init_fancy_light_surface():
 # example usage below 
 def init_default_light_surface():
     num_layers = 50
-    max_radius = utils.WIDTH/8
+    max_radius = utils.WIDTH/2
+    radius_inc = max_radius / num_layers
     max_brightness = 150
-    color = [max_brightness/num_layers]*3
+    b = max_brightness / num_layers
+    color = [b,b,b, 255/num_layers]
     
     def draw_layer(surface, index, pos):
-        radius = (max_radius / num_layers) * index # change how this is defined to change how evenly spaced the layers are (could replace with cos/sin to make it more natural)
+        radius = radius_inc * index # change how this is defined to change how evenly spaced the layers are (could replace with cos/sin to make it more natural)
         pygame.draw.circle(surface, color, pos, radius)
     
     def before_draw(surface):
         # creates ambient light
-        surface.fill((10,10,10))
+        # surface.fill((10,10,10))
+        pass
 
     return init_light_surface(num_layers, draw_layer, before_draw)
 
 
-def draw_polygon_with_image(polygon: list[Vector2], poly_rect: Rect, image: Surface, center: tuple):
-    mask_surf = Surface(poly_rect.size)
-    # expects polygon to be translated already
-    pygame.draw.polygon(mask_surf, (255,255,255), polygon)
-
-    surf = Surface(poly_rect.size)
-    r = image.get_rect()
-    r.center = center
-    
-    surf.blit(image, r)
-    surf.blit(mask_surf, (0,0), special_flags=pygame.BLEND_RGB_MULT)
-    pygame.draw.rect(surf, (255,0,0), surf.get_rect(), 2)
-    return surf, mask_surf
 
 if __name__ == "__main__":
     from utils import camera
@@ -246,7 +259,7 @@ if __name__ == "__main__":
 
     world = World()
 
-    l_pos = Vector2(3.3,3.4)
+    l_pos = Vector2(7,3.4)
     light_source = LightSource(l_pos, 120)
 
     ticks = 0
@@ -292,14 +305,5 @@ if __name__ == "__main__":
         screen.fill((0,0,0))
 
         world.render(screen)
-
-        p, pr = light_source._get_lighting_polygon()
-        light_source._translate_polygon(p, pr.topleft)
-        center = (light_source.pos * Tile.tileSize) - Vector2(pr.topleft)
-        surf, mask_surf = draw_polygon_with_image(p, pr, light_source.surface, center)
-        # mask_surf = pygame.transform.scale(mask_surf, (utils.WIDTH, utils.HEIGHT))
-        # light_source.debug_draw(screen)
-        # screen.blit(light_source.surface, (0,0))
-        screen.blit(surf, camera.project(pr))
-   
+        light_source.draw(screen)
         pygame.display.flip()
